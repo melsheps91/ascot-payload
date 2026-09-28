@@ -7,9 +7,12 @@ import sharp from 'sharp'
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
+import { Pages } from './collections/Pages'
+import { acfImportEndpoints } from './endpoints/acfImport'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
+const isDev = process.env.NODE_ENV !== 'production'
 
 export default buildConfig({
   admin: {
@@ -17,8 +20,19 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+    components: {
+      // Dev-only tool for turning CleanBuildPro ACF groups into blocks (see src/endpoints/acfImport.ts).
+      afterNavLinks: isDev ? ['/components/admin/AcfImportNavLink#AcfImportNavLink'] : [],
+      views: {
+        acfImport: {
+          Component: '/components/admin/AcfImportView#AcfImportView',
+          path: '/acf-import',
+        },
+      },
+    },
   },
-  collections: [Users, Media],
+  collections: [Users, Media, Pages],
+  endpoints: acfImportEndpoints,
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

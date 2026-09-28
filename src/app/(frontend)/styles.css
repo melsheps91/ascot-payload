@@ -1,164 +1,179 @@
-:root {
-  --font-mono: 'Roboto Mono', monospace;
-}
+/* Section styles. The CleanBuildPro foundation (variables, reset, text defaults,
+   helpers) is in theme.css. */
 
-* {
-  box-sizing: border-box;
-}
+/* ///////////////////////////////////////////////
+   //////  BANNERS
+   ////////////////////////////////////////////// */
 
-html {
-  font-size: 18px;
-  line-height: 32px;
-
-  background: rgb(0, 0, 0);
-  -webkit-font-smoothing: antialiased;
-}
-
-html,
-body,
-#app {
-  height: 100%;
-}
-
-body {
-  font-family: system-ui;
-  font-size: 18px;
-  line-height: 32px;
-
-  margin: 0;
-  color: rgb(1000, 1000, 1000);
-
-  @media (max-width: 1024px) {
-    font-size: 15px;
-    line-height: 24px;
-  }
-}
-
-img {
-  max-width: 100%;
-  height: auto;
-  display: block;
-}
-
-h1 {
-  margin: 40px 0;
-  font-size: 64px;
-  line-height: 70px;
-  font-weight: bold;
-
-  @media (max-width: 1024px) {
-    margin: 24px 0;
-    font-size: 42px;
-    line-height: 42px;
-  }
-
-  @media (max-width: 768px) {
-    font-size: 38px;
-    line-height: 38px;
-  }
-
-  @media (max-width: 400px) {
-    font-size: 32px;
-    line-height: 32px;
-  }
-}
-
-p {
-  margin: 24px 0;
-
-  @media (max-width: 1024px) {
-    margin: calc(var(--base) * 0.75) 0;
-  }
-}
-
-a {
-  color: currentColor;
-
-  &:focus {
-    opacity: 0.8;
-    outline: none;
-  }
-
-  &:active {
-    opacity: 0.7;
-    outline: none;
-  }
-}
-
-svg {
-  vertical-align: middle;
-}
-
-.home {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-  height: 100vh;
-  padding: 45px;
-  max-width: 1024px;
-  margin: 0 auto;
+.banner {
+  position: relative;
   overflow: hidden;
-
-  @media (max-width: 400px) {
-    padding: 24px;
-  }
-
-  .content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    flex-grow: 1;
-
-    h1 {
-      text-align: center;
+  /* Shown until an image or video is added (the theme uses a global fallback image). */
+  background: #1a1a1a;
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(90deg, var(--col-black) 25%, rgba(0, 0, 0, 0) 70%);
+    opacity: 0.7;
+    pointer-events: none;
+    @media (max-width: 800px) {
+      background: var(--col-black);
+      opacity: 0.4;
     }
   }
-
-  .links {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-
-    a {
-      text-decoration: none;
-      padding: 0.25rem 0.5rem;
-      border-radius: 4px;
+  .image,
+  .slider {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+  .slider {
+    container-type: size;
+    .slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.75s ease;
+      &.is-active { opacity: 1; }
     }
-
-    .admin {
-      color: rgb(0, 0, 0);
-      background: rgb(1000, 1000, 1000);
-      border: 1px solid rgb(0, 0, 0);
-    }
-
-    .docs {
-      color: rgb(1000, 1000, 1000);
-      background: rgb(0, 0, 0);
-      border: 1px solid rgb(1000, 1000, 1000);
+    video { object-fit: cover; }
+  }
+  /* Covers the banner with a 16:9 player, cropping whichever side overflows. */
+  .slider-youtube {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100cqw, 177.78cqh);
+    height: max(100cqh, 56.25cqw);
+    border: 0;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  .container {
+    position: relative;
+    z-index: 2;
+  }
+  .banner-text {
+    @media (max-width: 800px) { width: 100%; }
+    @media (max-width: 500px) { text-align: center; }
+    * { color: #fff; }
+    .eyebrow { color: var(--col-secondary); }
+    h1:last-child { margin-bottom: 0; }
+    p:last-child { margin-bottom: 0; }
+    .buttons {
+      @media (max-width: 500px) { justify-content: center; }
     }
   }
+}
 
-  .footer {
+.banner.home {
+  &::after {
+    display: none;
+    @media (max-width: 800px) { display: block; }
+  }
+  .banner-text {
+    margin: auto;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 40px 60px;
+    @media (max-width: 1100px) { width: 100%; }
+    @media (max-width: 800px) {
+      background: none;
+      padding: 0;
+    }
+  }
+}
+
+.banner.default {
+  &::after {
+    background: rgba(0, 0, 0, 0.75);
+    opacity: 1;
+  }
+  .half { margin: auto; }
+}
+
+.banner.split {
+  background: var(--col-light-grey);
+  flex-wrap: nowrap;
+  &::after { display: none; }
+  @media (max-width: 1000px) { flex-wrap: wrap; }
+  .banner-text {
     display: flex;
     align-items: center;
-    gap: 8px;
-
-    @media (max-width: 1024px) {
-      flex-direction: column;
-      gap: 6px;
+    @media (max-width: 1000px) {
+      background: rgba(255, 255, 255, 0.5);
+      position: relative;
+      z-index: 2;
     }
-
-    p {
-      margin: 0;
+    * { color: var(--col-black); }
+    .eyebrow { color: var(--col-primary); }
+    .btn.primary,
+    .btn.secondary { color: #fff; }
+  }
+  .banner-slider {
+    min-height: 480px;
+    @media (max-width: 1000px) {
+      position: static;
+      min-height: 0;
     }
+  }
+  .half {
+    @media (max-width: 1000px) { width: 100%; }
+  }
+}
 
-    .codeLink {
-      text-decoration: none;
-      padding: 0 0.5rem;
-      background: rgb(60, 60, 60);
-      border-radius: 4px;
+.banner.large,
+.banner.home {
+  padding: 200px 0;
+  @media (max-width: 1200px) { padding: 150px 0; }
+  @media (max-width: 800px) { padding: 100px 0; }
+  @media (max-width: 600px) { padding: 75px 0; }
+}
+
+/* "Play Video" lightbox (the theme uses fancybox). */
+.video-lightbox {
+  width: min(90vw, 1240px);
+  max-width: none;
+  max-height: none;
+  margin: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+  &::backdrop { background: rgba(0, 0, 0, 0.85); }
+  .video-lightbox-frame {
+    aspect-ratio: 16 / 9;
+    width: min(100%, calc(min(90vh, 720px) * 16 / 9));
+    margin: 0 auto;
+    background: var(--col-black);
+    iframe,
+    video {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 0;
     }
+  }
+  .video-lightbox-close {
+    position: absolute;
+    top: -44px;
+    right: 0;
+    color: #fff;
+    font-size: 36px;
+    line-height: 1;
+    cursor: pointer;
+    &:hover { color: var(--col-secondary); }
+  }
+}
+
+/* ///////////////////////////////////////////////
+   //////  INTRO CONTENT
+   ////////////////////////////////////////////// */
+
+.intro-content {
+  :only-child,
+  > :last-child {
+    margin-bottom: 0;
   }
 }
