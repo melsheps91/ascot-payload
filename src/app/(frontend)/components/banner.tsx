@@ -1,12 +1,9 @@
-import Image from 'next/image'
-
 import type { BannerBlock, Media } from '@/payload-types'
 import { Autop } from './shared/autop'
-import { Buttons } from './shared/button'
+import { Buttons, type LinkValue } from './shared/button'
+import { Emphasis } from './shared/heading'
+import { asMedia, Img } from './shared/media'
 import { BannerSlideshow, type BannerVideo, VideoButton } from './banner-media'
-
-const media = (value: number | Media | null | undefined): Media | null =>
-  value && typeof value === 'object' && value.url ? value : null
 
 // Accepts watch, share, embed and shorts URLs, or a bare video ID.
 const youtubeId = (url?: string | null): string | null => {
@@ -15,16 +12,24 @@ const youtubeId = (url?: string | null): string | null => {
   return match?.[1] ?? null
 }
 
-export function Banner({ block, pageTitle }: { block: BannerBlock; pageTitle?: string }) {
-  const { variant = 'large', preHeading, heading, buttons, text } = block
+export function Banner({
+  block,
+  pageTitle,
+  path,
+}: {
+  block: BannerBlock
+  pageTitle?: string
+  path?: string
+}) {
+  const { variant = 'large', preHeading, heading, buttons, text, stats, scrollLink } = block
   const isVideo = block.type === 'video'
   const isYoutube = isVideo && block.videoType !== 'local'
 
   // Background media, following inc/footer/backstretch-script.php.
-  const images = (block.images ?? []).map(media).filter((image): image is Media => !!image)
+  const images = (block.images ?? []).map(asMedia).filter((image): image is Media => !!image)
   const ytId = isYoutube ? youtubeId(block.youtube) : null
-  const localVideo = isVideo && !isYoutube ? media(block.video) : null
-  const poster = media(block.videoFallback)
+  const localVideo = isVideo && !isYoutube ? asMedia(block.video) : null
+  const poster = asMedia(block.videoFallback)
 
   let background: BannerVideo | null = null
   if (ytId) background = { kind: 'youtube', id: ytId }
@@ -32,67 +37,147 @@ export function Banner({ block, pageTitle }: { block: BannerBlock; pageTitle?: s
 
   // "Play Video" button, following banner-variables.php.
   let playVideo: BannerVideo | null = null
+  const fullVideo = asMedia(block.fullVideo)
   if (ytId) playVideo = { kind: 'youtube', id: ytId }
-  else if (isVideo && !isYoutube && media(block.fullVideo))
-    playVideo = { kind: 'local', src: media(block.fullVideo)!.url! }
+  else if (isVideo && !isYoutube && fullVideo) playVideo = { kind: 'local', src: fullVideo.url! }
 
-  let backdrop = null
-  if (background || images.length > 1) {
-    backdrop = <BannerSlideshow images={images} video={background} />
-  } else if (!isVideo && images[0]) {
-    backdrop = (
+  const media =
+    background || images.length > 1 ? (
+      <BannerSlideshow images={images} position={block.imagePosition} video={background} />
+    ) : (
       <div className="image">
-        <Image alt={images[0].alt} className="o-fit" fill priority sizes="100vw" src={images[0].url!} />
+        <Img image={images[0] ?? poster} position={block.imagePosition} priority />
       </div>
     )
-  } else if (isVideo && poster) {
-    // Video chosen but none uploaded yet: show the poster rather than an empty banner.
-    backdrop = (
-      <div className="image">
-        <Image alt={poster.alt} className="o-fit" fill priority sizes="100vw" src={poster.url!} />
-      </div>
-    )
-  }
 
-  const hasButtons = !!buttons?.some((item) => item.button?.url) || !!playVideo
-
-  const content = (
-    <>
-      {preHeading && <span className="eyebrow">{preHeading}</span>}
-      <h1>{heading || pageTitle}</h1>
-      <Autop text={text} />
-      {hasButtons && (
-        <div className={`buttons${variant === 'home' ? ' j-center' : ''}`}>
-          <Buttons items={buttons} />
-          {playVideo && <VideoButton video={playVideo} />}
-        </div>
-      )}
-    </>
+  const title = (
+    <h1>
+      <Emphasis text={heading || pageTitle} />
+    </h1>
+  )
+  const kicker = preHeading && <span className="kicker">{preHeading}</span>
+  const actions = (buttons?.length || playVideo) && (
+    <div className="buttons">
+      <Buttons className={null} items={buttons} />
+      {playVideo && <VideoButton video={playVideo} />}
+    </div>
   )
 
   if (variant === 'split') {
     return (
-      <section className="banner split flex">
-        <div className="banner-text half large-pad">
-          <div className="inner-container">{content}</div>
+      <section className="banner split">
+        <div className="container banner-inner">
+          <div className="banner-text">
+            {kicker}
+            {title}
+            {text && (
+              <div className="banner-intro">
+                <Autop text={text} />
+              </div>
+            )}
+            {actions}
+          </div>
+          <div className="banner-portrait">
+            <Img image={images[0]} position={block.imagePosition} priority sizes="(max-width: 980px) 100vw, 50vw" />
+          </div>
         </div>
-        <div className="banner-slider half relative">{backdrop}</div>
       </section>
     )
   }
 
-  const textClass = {
-    large: 'banner-text half',
-    home: 'banner-text half t-center',
-    default: 'banner-text half t-center',
-  }[variant]
+  if (variant === 'default') {
+    return (
+      <section className="banner default">
+        <div className="container banner-inner">
+          <div className="banner-text">
+            {kicker}
+            {title}
+            {text && (
+              <div className="banner-intro">
+                <Autop text={text} />
+              </div>
+            )}
+          </div>
+          {!!buttons?.length && (
+            <nav aria-label="Section" className="banner-tabs">
+              {buttons.map((item, i) => {
+                const link = item.button as LinkValue
+                if (!link?.url) return null
+                return (
+                  <a
+                    aria-current={link.url === path ? 'page' : undefined}
+                    className={`pill${link.url === path ? ' is-active' : ''}`}
+                    href={link.url}
+                    key={item.id ?? i}
+                  >
+                    {link.label}
+                  </a>
+                )
+              })}
+            </nav>
+          )}
+        </div>
+      </section>
+    )
+  }
 
+  if (variant === 'home') {
+    return (
+      <section className="banner home">
+        {media}
+        <div aria-hidden className="banner-overlay" />
+        <div className="container banner-inner">
+          <div className="banner-text">
+            {kicker}
+            {title}
+            {text && (
+              <div className="banner-intro">
+                <Autop text={text} />
+              </div>
+            )}
+            {actions}
+          </div>
+          {(!!stats?.length || scrollLink?.url) && (
+            <div className="banner-stats">
+              {stats?.map((stat) => (
+                <div className="stat" key={stat.id}>
+                  <span className="stat-value">{stat.value}</span>
+                  <span className="stat-label">{stat.label}</span>
+                </div>
+              ))}
+              {scrollLink?.url && (
+                <a className="scroll-link" href={scrollLink.url}>
+                  {scrollLink.label}
+                  <span className="scroll-circle">
+                    <i aria-hidden className={scrollLink.icon || 'fa-solid fa-arrow-down'} />
+                  </span>
+                </a>
+              )}
+            </div>
+          )}
+        </div>
+      </section>
+    )
+  }
+
+  // Large: image, title and intro.
   return (
-    <section className={`banner ${variant}${variant === 'default' ? ' small-pad' : ''}`}>
-      <div className="container">
-        <div className={textClass}>{content}</div>
+    <section className="banner large">
+      {media}
+      <div aria-hidden className="banner-overlay" />
+      <div className="container banner-inner">
+        <div className="banner-text">
+          {kicker}
+          {title}
+        </div>
+        {(text || actions) && (
+          <div className="banner-intro">
+            <Autop text={text} />
+            {actions}
+          </div>
+        )}
       </div>
-      {backdrop}
     </section>
   )
 }
+

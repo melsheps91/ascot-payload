@@ -1,0 +1,108 @@
+@use '../vars' as *;
+@use '../mixins' as *;
+
+///////////////////////////////////////////////
+//////  FORM SECTION
+//////////////////////////////////////////////
+
+.form-section {
+  @include auto-grid(440px, clamp(48px, 6vw, 96px));
+  align-items: start;
+  padding-top: 200px;
+  padding-bottom: clamp(64px, 8vw, 120px);
+  @include max-width(600px) {
+    padding-top: 150px;
+  }
+}
+
+.form-section-text {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  @include rise();
+}
+
+.contact-details {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  padding-top: 24px;
+  border-top: 1px solid rgba($col-white, 0.2);
+
+  .contact-block {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    .eyebrow {
+      font-size: 12px;
+    }
+  }
+
+  .contact-phone {
+    font-size: clamp(28px, 3vw, 40px);
+    font-weight: 200;
+    letter-spacing: -0.02em;
+    &:hover {
+      color: $col-pale;
+    }
+  }
+
+  address {
+    font-size: 18px;
+    font-style: normal;
+    line-height: 1.6;
+    color: rgba($col-white, 0.9);
+  }
+
+  .contact-note {
+    font-size: 14px;
+    line-height: 1.6;
+    color: rgba($col-white, 0.75);
+  }
+
+  .social {
+    display: flex;
+    gap: 10px;
+    .btn.icon {
+      width: 48px;
+      height: 48px;
+    }
+  }
+}
+
+.form-card {
+  padding: clamp(28px, 3.6vw, 48px);
+  border-radius: $radius-large;
+  background: $col-white;
+  color: $col-black;
+  @include rise(0.15s);
+  .form-message {
+    color: $col-grey;
+    font-size: 12px;
+  }
+  // Undo the navy-section button and pill styles.
+  .btn.primary {
+    background: $col-primary;
+    border-color: $col-primary;
+    color: $col-white;
+    &:hover {
+      background: $col-secondary;
+      border-color: $col-secondary;
+    }
+  }
+  .btn.secondary {
+    border-color: $col-border-dark;
+    color: $col-black;
+    &:hover {
+      background: transparent;
+      border-color: $col-black;
+      color: $col-black;
+    }
+  }
+  .pill {
+    border-color: $col-border-dark;
+  }
+  .content {
+    color: $col-text;
+  }
+}

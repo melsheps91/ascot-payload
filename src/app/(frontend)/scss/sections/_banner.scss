@@ -1,0 +1,304 @@
+@use '../vars' as *;
+@use '../mixins' as *;
+
+///////////////////////////////////////////////
+//////  BANNERS
+//////////////////////////////////////////////
+
+// Empty image slot (no image uploaded yet).
+.img-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  padding: 24px;
+  background: linear-gradient(135deg, $col-pale, $col-light-grey);
+  span {
+    @include eyebrow();
+    color: rgba($col-black, 0.35);
+  }
+  .primary-back &,
+  .banner & {
+    background: linear-gradient(135deg, $col-primary-hover, $col-secondary);
+    span {
+      color: rgba($col-white, 0.4);
+    }
+  }
+}
+
+.banner {
+  position: relative;
+  overflow: hidden;
+  background: $col-primary;
+  color: $col-white;
+
+  .image,
+  .slider {
+    position: absolute;
+    inset: 0;
+  }
+
+  // Background slideshow / video (banner-media.tsx).
+  .slider {
+    container-type: size;
+    .slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.75s ease;
+      &.is-active {
+        opacity: 1;
+      }
+    }
+    video {
+      object-fit: cover;
+    }
+  }
+
+  // Covers the banner with a 16:9 player, cropping whichever side overflows.
+  .slider-youtube {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100cqw, 177.78cqh);
+    height: max(100cqh, 56.25cqw);
+    border: 0;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  .banner-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .banner-inner {
+    position: relative;
+  }
+
+  .banner-text {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    @include rise();
+  }
+
+  .banner-intro {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 520px;
+    font-size: 18px;
+    line-height: 1.7;
+    color: rgba($col-white, 0.9);
+    text-wrap: pretty;
+    @include rise(0.15s);
+  }
+
+  .buttons {
+    @include rise(0.2s);
+  }
+}
+
+// Home: full height with stats along the bottom.
+.banner.home {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: max(760px, 100vh);
+
+  .banner-overlay {
+    background: linear-gradient(180deg, rgba($col-primary, 0.55) 0%, rgba($col-primary, 0.15) 35%, rgba($col-primary, 0.92) 100%);
+  }
+
+  .banner-inner {
+    width: 100%;
+    padding-top: $header-clearance;
+    padding-bottom: 56px;
+  }
+
+  h1 {
+    @include display(clamp(48px, 8.4vw, 136px), 200, 0.98, -0.035em);
+    max-width: 1200px;
+  }
+
+  .banner-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 32px;
+    align-items: end;
+    margin-top: 64px;
+    padding-top: 32px;
+    border-top: 1px solid rgba($col-white, 0.28);
+    @include rise(0.25s);
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .stat-value {
+    font-size: clamp(40px, 4vw, 60px);
+    font-weight: 200;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 14px;
+    color: rgba($col-white, 0.85);
+  }
+
+  .scroll-link {
+    justify-self: end;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    &:hover {
+      color: $col-pale;
+    }
+    @include max-width(600px) {
+      justify-self: start;
+    }
+  }
+
+  .scroll-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border: 1px solid rgba($col-white, 0.6);
+    border-radius: 50%;
+  }
+}
+
+// Large: page hero with the title on the left and the intro on the right.
+.banner.large {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: clamp(560px, 78vh, 820px);
+
+  .banner-overlay {
+    background: linear-gradient(180deg, rgba($col-primary, 0.6) 0%, rgba($col-primary, 0.25) 35%, rgba($col-primary, 0.94) 100%);
+  }
+
+  .banner-inner {
+    @include auto-grid(420px, 32px 80px);
+    align-items: end;
+    width: 100%;
+    padding-top: $header-clearance;
+    padding-bottom: 72px;
+  }
+
+  h1 {
+    @include display(clamp(44px, 6.4vw, 104px), 200, 1, -0.035em);
+  }
+}
+
+// Split: text beside a portrait that sits on the bottom edge.
+.banner.split {
+  .banner-inner {
+    @include auto-grid(440px, clamp(40px, 5vw, 80px));
+    align-items: end;
+    padding-top: $header-clearance;
+  }
+
+  .banner-text {
+    gap: 32px;
+    padding-bottom: clamp(40px, 6vw, 96px);
+  }
+
+  .banner-intro {
+    font-size: 20px;
+    line-height: 1.6;
+  }
+
+  .banner-portrait {
+    position: relative;
+    height: clamp(420px, 48vw, 680px);
+    border-radius: $radius-large $radius-large 0 0;
+    overflow: hidden;
+    @include rise(0.2s);
+  }
+}
+
+// Default: navy header with no image, optionally with pill tabs (legal pages).
+.banner.default {
+  .banner-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+    padding-top: 200px;
+    padding-bottom: clamp(56px, 6vw, 72px);
+    @include max-width(600px) {
+      padding-top: 150px;
+    }
+  }
+
+  .banner-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding-top: 28px;
+    border-top: 1px solid rgba($col-white, 0.2);
+    .pill {
+      padding: 12px 22px;
+      border-color: rgba($col-white, 0.4);
+    }
+  }
+}
+
+// A banner followed by the news filters reads as one navy block.
+.banner.default:has(+ .posts-loop-wrap) .banner-inner {
+  padding-bottom: 32px;
+}
+
+///////////////////////////////////////////////
+//////  VIDEO LIGHTBOX (the theme's fancybox)
+//////////////////////////////////////////////
+
+.video-lightbox {
+  width: min(90vw, 1240px);
+  max-width: none;
+  max-height: none;
+  margin: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+  &::backdrop {
+    background: rgba(0, 0, 0, 0.85);
+  }
+  .video-lightbox-frame {
+    aspect-ratio: 16 / 9;
+    width: min(100%, calc(min(90vh, 720px) * 16 / 9));
+    margin: 0 auto;
+    background: $col-black;
+    iframe,
+    video {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+  }
+  .video-lightbox-close {
+    position: absolute;
+    top: -44px;
+    right: 0;
+    color: $col-white;
+    font-size: 36px;
+    line-height: 1;
+    &:hover {
+      color: $col-pale;
+    }
+  }
+}

@@ -35,7 +35,7 @@ Check the output with the user before writing anything:
 npm run acf:import -- <files>
 ```
 
-This writes `src/blocks/<Name>.ts` (or `src/globals/<Name>.ts`), registers it in `Pages.ts` `layout.blocks` (or in `payload.config.ts` `globals`) and regenerates `src/payload-types.ts`. For blocks it also creates `src/app/(frontend)/components/<kebab-name>.tsx`, a stub that dumps the block JSON, and adds a `case` to the switch in `src/app/(frontend)/page.tsx`.
+This writes `src/blocks/<Name>.ts` (or `src/globals/<Name>.ts`), registers it in `Pages.ts` `layout.blocks` (or in `payload.config.ts` `globals`) and regenerates `src/payload-types.ts`. For blocks it also creates `src/app/(frontend)/components/<kebab-name>.tsx`, a stub that dumps the block JSON. It also adds a `case` to the switch in `src/app/(frontend)/components/render-blocks.tsx`.
 
 Field names are camelCased. The group's shared prefix is stripped, so `icon_intro_heading` becomes `introHeading`. Read the generated config before porting.
 
@@ -62,21 +62,18 @@ If the old component file has hand-written markup for a different schema (e.g. t
 
 ## Step 5: Port the SCSS
 
-The theme foundation (`scss/_vars`, `_reset`, `_text-defaults`, `_helpers`) is already ported to `src/app/(frontend)/theme.css`. The fonts (Roboto 300 as `--font-primary`, Montserrat 600 as `--font-secondary`) load through `next/font` in `layout.tsx`. `scss/_forms.scss`, the Slick and Fancybox vendor styles, and the WordPress image-alignment helpers aren't ported yet. Port them into `theme.css` when a section first needs them.
+Styles are Sass in `src/app/(frontend)/scss/`. The theme foundation partials (`_vars`, `_mixins`, `_reset`, `_helpers`, `_text-defaults`, `_buttons`, `_forms`) are already there, re-skinned for the Ascot redesign.
 
-Section styles go in `src/app/(frontend)/styles.css` as plain nested CSS (no Sass):
-
-- Find the section's styles in `../CleanBuildPro/style.scss` by its `//////  SECTION NAME` header or wrapper class.
-- `//` comments are invalid in CSS. Wrap the section header in `/* ... */`, keeping its slashes, as the existing sections do.
-- `$col-primary` becomes `var(--col-primary)`. `@include max-width(900px) { ... }` becomes `@media (max-width: 900px) { ... }`, still nested inside the element and on its own lines. Media queries can't use custom properties, so write the pixel values out (e.g. `$container-width + 120px` becomes `1720px`). Replace `darken()`/`lighten()` with the computed hex and add a comment naming the original.
-- `&-suffix` selector concatenation doesn't exist in native CSS nesting, so write the full class name. `.parent &` and leading combinators (`+ ul`) work as they do in Sass.
+- Find the section's styles in `../CleanBuildPro/style.scss` by its `//////  SECTION NAME` header or wrapper class, and copy them into a new partial `scss/sections/_<name>.scss` starting with `@use '../vars' as *;` and `@use '../mixins' as *;`. Add it to `main.scss`.
+- Sass syntax carries over as-is: `$col-*` variables, `@include max-width(...)`, `&-suffix`, `darken()`/`lighten()` (prefer `color.adjust` for new code).
 - Keep the theme rules: max-width queries only, one selector per line, and style semantic classes rather than helper classes.
+- Wrap the block in `Section` from `components/shared/section.tsx` to get `{name}-wrap large-pad` and the background classes.
 
 ## Step 6: Verify
 
 1. `npx tsc --noEmit` must pass.
 2. `npm run test:int`.
-3. Ask the user to run `npm run dev` in their own terminal. It pushes the new tables to `ascot-payload.db` and may ask "create or rename column?" questions that block every request until answered.
+3. Ask the user to run `npm run dev` in their own terminal. It pushes the new tables to `ascot-payload.db` and may ask "create or rename column?" questions that block every request until answered. If the push fails with "index … already exists", stop the server and run `npm run db:push`.
 4. Add the block to a page in `/admin` with dummy content, and check the render at the page's URL against the WordPress version.
 
 Tell the user which sections were converted, what was skipped or left as TODO, and anything still unported (JS behaviour, global fallbacks, missing collections).

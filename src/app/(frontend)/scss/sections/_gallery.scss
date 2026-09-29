@@ -1,0 +1,28 @@
+@use '../vars' as *;
+@use '../mixins' as *;
+
+///////////////////////////////////////////////
+//////  GALLERY
+//////////////////////////////////////////////
+
+.gallery {
+  @include auto-grid(300px, 20px);
+
+  .gallery-image {
+    position: relative;
+    height: clamp(240px, 24vw, 360px);
+    border-radius: $radius;
+    overflow: hidden;
+  }
+
+  &.single .gallery-image {
+    height: clamp(360px, 44vw, 620px);
+    border-radius: $radius-large;
+  }
+}
+
+// A lone image after a form or banner doesn't need a full section gap above it.
+.gallery-wrap:not(:has(.section-intro)) {
+  padding-top: clamp(64px, 8vw, 120px);
+  padding-bottom: clamp(64px, 8vw, 120px);
+}

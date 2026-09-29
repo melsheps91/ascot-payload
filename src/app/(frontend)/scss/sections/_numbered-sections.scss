@@ -1,0 +1,93 @@
+@use '../vars' as *;
+@use '../mixins' as *;
+
+///////////////////////////////////////////////
+//////  NUMBERED SECTIONS (legal pages)
+//////////////////////////////////////////////
+
+.numbered-sections {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(0, 2fr);
+  gap: clamp(40px, 6vw, 96px);
+  align-items: start;
+  @include max-width(900px) {
+    grid-template-columns: 1fr;
+  }
+
+  .contents {
+    position: sticky;
+    top: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 28px;
+    border-radius: $radius;
+    background: $col-light-grey;
+    @include max-width(900px) {
+      position: static;
+    }
+    .eyebrow {
+      margin-bottom: 12px;
+      font-size: 12px;
+    }
+    a {
+      display: flex;
+      gap: 14px;
+      padding: 10px 0;
+      border-bottom: 1px solid $col-border;
+      font-size: 15px;
+      &:hover {
+        color: $col-secondary;
+      }
+      span {
+        width: 24px;
+        flex: none;
+        font-weight: 500;
+        color: $col-secondary;
+      }
+    }
+    .reg {
+      margin-top: 16px;
+      font-size: 13px;
+      color: $col-grey;
+    }
+  }
+
+  .sections {
+    display: flex;
+    flex-direction: column;
+    gap: 56px;
+    max-width: 820px;
+    min-width: 0;
+  }
+
+  .numbered-section {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    scroll-margin-top: 32px;
+    h2 {
+      @include display(clamp(26px, 2.6vw, 38px), 300, 1.15, -0.02em);
+    }
+    .content {
+      font-size: 17px;
+      line-height: 1.8;
+    }
+  }
+
+  .section-number {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    color: $col-secondary;
+  }
+
+  .to-follow {
+    padding: 24px 28px;
+    border: 1px dashed $col-border-dark;
+    border-radius: $radius-small;
+    font-size: 15px;
+    line-height: 1.7;
+    color: $col-grey;
+  }
+}

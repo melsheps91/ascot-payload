@@ -1,15 +1,19 @@
 import type { Block } from 'payload'
 
 import { link } from '../fields/link'
+import { headingDescription } from '../fields/section'
 
 // Mirrors ACF group "Banner" (group_616d7a7d96c54) plus the theme's four banner templates
-// (inc/header/banner-*.php), which WordPress picks by page template.
+// (inc/header/banner-*.php), which WordPress picks by page template. The variants are
+// restyled to the Ascot redesign; their values are kept so existing banners still work.
 export const Banner: Block = {
   slug: 'banner',
+  imageURL: '/admin/blocks/banner.jpg',
+  admin: { group: 'Page headers' },
   interfaceName: 'BannerBlock',
   labels: {
-    singular: 'Banner',
-    plural: 'Banners',
+    singular: 'Page header',
+    plural: 'Page headers',
   },
   fields: [
     // Hand-added: WordPress chooses the banner template from the page template.
@@ -20,10 +24,10 @@ export const Banner: Block = {
       defaultValue: 'large',
       required: true,
       options: [
-        { label: 'Large (text left)', value: 'large' },
-        { label: 'Home (centred panel)', value: 'home' },
-        { label: 'Default (compact, centred)', value: 'default' },
-        { label: 'Split (text beside media)', value: 'split' },
+        { label: 'Home (full height, with stats)', value: 'home' },
+        { label: 'Large (image, title and intro)', value: 'large' },
+        { label: 'Split (text beside a portrait image)', value: 'split' },
+        { label: 'Default (navy header, no image)', value: 'default' },
       ],
     },
     {
@@ -36,14 +40,18 @@ export const Banner: Block = {
       label: 'Banner Heading',
       type: 'text',
       admin: {
-        description: 'Leave empty to use the page title.',
+        description: `Leave empty to use the page title. ${headingDescription}`,
       },
     },
     {
       name: 'buttons',
       label: 'Banner Buttons',
       type: 'array',
-      maxRows: 2,
+      maxRows: 3,
+      admin: {
+        description:
+          'On the Default style, buttons show as pill tabs and the one linking to the current page is highlighted.',
+      },
       fields: [
         link({
           name: 'button',
@@ -51,6 +59,33 @@ export const Banner: Block = {
         }),
       ],
     },
+    // Hand-added for the redesign's home hero.
+    {
+      name: 'stats',
+      label: 'Stats',
+      type: 'array',
+      maxRows: 4,
+      admin: {
+        condition: (_, siblingData) => siblingData?.variant === 'home',
+      },
+      fields: [
+        {
+          type: 'row',
+          fields: [
+            { name: 'value', type: 'text', required: true },
+            { name: 'label', type: 'text', required: true },
+          ],
+        },
+      ],
+    },
+    link({
+      name: 'scrollLink',
+      label: 'Scroll Link',
+      admin: {
+        condition: (_, siblingData) => siblingData?.variant === 'home',
+        description: 'The round arrow link beside the stats, e.g. "Discover the Group" to #about.',
+      },
+    }),
     {
       name: 'type',
       label: 'Banner Type',
@@ -81,6 +116,26 @@ export const Banner: Block = {
       admin: {
         condition: (_, siblingData) => siblingData?.type !== 'video',
         description: 'Add more than one image to show a fading slideshow.',
+      },
+    },
+    // Hand-added: where the image is anchored when the header crops it.
+    {
+      name: 'imagePosition',
+      label: 'Image Position',
+      type: 'select',
+      defaultValue: 'focal',
+      options: [
+        { label: "Image's focal point (set in Images & files)", value: 'focal' },
+        { label: 'Top', value: 'top' },
+        { label: 'Centre', value: 'center' },
+        { label: 'Bottom', value: 'bottom' },
+        { label: 'Left', value: 'left' },
+        { label: 'Right', value: 'right' },
+      ],
+      admin: {
+        condition: (_, siblingData) => siblingData?.type !== 'video',
+        description:
+          'Which part of the image stays in view when the header crops it. The focal point is set by clicking on the image in Images & files.',
       },
     },
     {

@@ -1,0 +1,142 @@
+@use '../vars' as *;
+@use '../mixins' as *;
+
+///////////////////////////////////////////////
+//////  SECTION INTRO (shared by the grids)
+//////////////////////////////////////////////
+
+.section-intro {
+  @include auto-grid(420px, 32px clamp(40px, 6vw, 120px));
+  align-items: end;
+  margin-bottom: clamp(40px, 5vw, 64px);
+
+  &.no-aside {
+    display: flex;
+  }
+
+  .section-intro-main {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 860px;
+  }
+
+  h2 {
+    @include display(clamp(36px, 4.4vw, 68px), 200, 1.05, -0.03em);
+    &.h2-large {
+      @include display(clamp(40px, 5.5vw, 88px), 200, 1, -0.035em);
+    }
+  }
+
+  .section-intro-aside {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+    max-width: 560px;
+    .content {
+      font-size: 17px;
+    }
+    // A lone button sits at the far right, level with the heading's baseline.
+    &:not(:has(.content)) {
+      justify-self: end;
+      @include max-width(900px) {
+        justify-self: start;
+      }
+    }
+  }
+}
+
+///////////////////////////////////////////////
+//////  INTRO CONTENT
+//////////////////////////////////////////////
+
+.intro-content-wrap {
+  &.centred {
+    h2 {
+      margin-bottom: 24px;
+    }
+    .content {
+      align-items: center;
+    }
+    .buttons {
+      margin-top: 32px;
+    }
+  }
+
+  .intro-grid {
+    @include auto-grid(420px, clamp(40px, 6vw, 120px));
+    align-items: start;
+  }
+
+  .intro-main {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    h2 {
+      @include display(clamp(34px, 4vw, 60px), 300, 1.08, -0.025em);
+    }
+    // Large call-to-action headings (no eyebrow, no content column heading).
+    h2:only-child,
+    h2:first-child:last-child {
+      @include display(clamp(44px, 6.4vw, 104px), 200, 0.98, -0.04em);
+    }
+  }
+
+  .intro-aside {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 32px;
+    padding-top: clamp(0px, 4vw, 56px);
+    .content {
+      max-width: 620px;
+    }
+  }
+
+  // Heading and content only: centre them against each other (Careers call to action).
+  .intro-grid:has(.intro-main > h2:only-child) {
+    align-items: center;
+    .intro-aside {
+      padding-top: 0;
+    }
+  }
+
+  .heading-links .btn {
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 400;
+    gap: 10px;
+    &:hover {
+      background: $col-black;
+      border-color: $col-black;
+      color: $col-white;
+    }
+  }
+
+  .intro-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    .stat-value {
+      font-size: clamp(80px, 12vw, 200px);
+      font-weight: 200;
+      letter-spacing: -0.05em;
+      line-height: 0.9;
+    }
+    .stat-caption {
+      max-width: 420px;
+      font-size: 20px;
+      line-height: 1.5;
+      color: $col-text;
+    }
+  }
+
+  .intro-image {
+    position: relative;
+    height: clamp(320px, 42vw, 620px);
+    margin-top: clamp(48px, 6vw, 88px);
+    border-radius: $radius-large;
+    overflow: hidden;
+  }
+}

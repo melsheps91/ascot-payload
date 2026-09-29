@@ -1,0 +1,129 @@
+// CleanBuildPro scss/_helpers.scss, with the redesign's containers and spacing.
+@use 'vars' as *;
+@use 'mixins' as *;
+
+.clear { clear: both; }
+.t-left { text-align: left; }
+.t-right { text-align: right; }
+.t-center { text-align: center; }
+.relative { position: relative; }
+.half { width: 50%; }
+
+.flex {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.nowrap { flex-wrap: nowrap; }
+.a-center { align-items: center; }
+.a-start { align-items: flex-start; }
+.a-end { align-items: flex-end; }
+.j-center { justify-content: center; }
+.j-start { justify-content: flex-start; }
+.j-between { justify-content: space-between; }
+.j-end { justify-content: flex-end; }
+
+.o-fit {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.o-contain {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+///////////////////////////////////////////////
+//////  BACKGROUNDS
+//////////////////////////////////////////////
+
+.grey-back {
+  background-color: $col-light-grey;
+}
+
+// Navy sections (the theme's primary-back).
+.primary-back {
+  background-color: $col-primary;
+  color: $col-white;
+}
+
+///////////////////////////////////////////////
+//////  CONTAINERS
+//////////////////////////////////////////////
+
+.container-large,
+.container,
+.container-medium,
+.container-small {
+  width: 100%;
+  margin: 0 auto;
+  padding-left: $gutter;
+  padding-right: $gutter;
+}
+
+.container-large { max-width: $container-large-width; }
+.container { max-width: $container-width; }
+.container-medium { max-width: $container-medium-width; }
+.container-small { max-width: $container-small-width; }
+
+///////////////////////////////////////////////
+//////  PADDING
+//////////////////////////////////////////////
+
+.large-pad {
+  padding-top: $section-pad;
+  padding-bottom: $section-pad;
+}
+
+.med-pad {
+  padding-top: clamp(64px, 8vw, 120px);
+  padding-bottom: clamp(64px, 8vw, 120px);
+}
+
+.no-pad-top { padding-top: 0; }
+.no-pad-bot { padding-bottom: 0; }
+
+// Remove top padding from consecutive sections with the same background colour.
+.large-pad:not(.grey-back, .primary-back) + .large-pad:not(.grey-back, .primary-back),
+.large-pad.grey-back + .large-pad.grey-back,
+.large-pad.primary-back + .large-pad.primary-back {
+  padding-top: 0;
+}
+
+.spacer {
+  height: 40px;
+  @include max-width(980px) {
+    height: 32px;
+  }
+}

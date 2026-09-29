@@ -43,7 +43,7 @@ export const projectPaths = (root: string) => ({
   pages: path.join(root, 'src/collections/Pages.ts'),
   config: path.join(root, 'src/payload.config.ts'),
   components: path.join(root, 'src/app/(frontend)/components'),
-  renderer: path.join(root, 'src/app/(frontend)/page.tsx'),
+  renderer: path.join(root, 'src/app/(frontend)/components/render-blocks.tsx'),
   inbox: path.join(root, 'acf-import'),
   theme: path.resolve(root, '../CleanBuildPro/functions/acf/acf-fields-sync'),
 })
@@ -213,8 +213,8 @@ async function addFrontend(paths: Paths, result: Converted): Promise<string[]> {
   source = addImport(
     source,
     result.exportName,
-    `import { ${result.exportName} } from './components/${result.kebab}'`,
-    /from ['"]\.\/components\//,
+    `import { ${result.exportName} } from './${result.kebab}'`,
+    /from ['"]\.\/[a-z-]+['"]/,
   )
   fs.writeFileSync(paths.renderer, source)
   notes.push(`added case '${result.slug}' to ${rel(paths, paths.renderer)}`)

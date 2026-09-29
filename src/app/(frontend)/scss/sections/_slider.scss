@@ -1,0 +1,76 @@
+@use '../vars' as *;
+@use '../mixins' as *;
+
+///////////////////////////////////////////////
+//////  SLIDER (Embla, replaces Slick)
+//////////////////////////////////////////////
+
+.carousel {
+  position: relative;
+
+  .slider-viewport {
+    overflow: hidden;
+  }
+
+  .slider-track {
+    display: flex;
+    touch-action: pan-y pinch-zoom;
+  }
+
+  .slider-slide {
+    flex: 0 0 100%;
+    min-width: 0;
+  }
+
+  .slider-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .slider-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid $col-border-dark;
+    border-radius: 50%;
+    background: $col-white;
+    color: $col-black;
+    transition: all 0.25s ease;
+    &:hover {
+      background: $col-black;
+      border-color: $col-black;
+      color: $col-white;
+    }
+  }
+
+  .slider-dots {
+    display: flex;
+    gap: 8px;
+  }
+
+  .slider-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba($col-black, 0.25);
+    &.is-active {
+      background: $col-black;
+    }
+  }
+
+  // Controls laid over an image.
+  &.image-slider .slider-controls {
+    margin-top: 0;
+    .slider-dot {
+      background: rgba($col-white, 0.5);
+      &.is-active {
+        background: $col-white;
+      }
+    }
+  }
+}

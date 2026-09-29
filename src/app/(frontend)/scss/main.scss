@@ -1,0 +1,31 @@
+// Entry point for the site styles, in the order of CleanBuildPro's style.scss.
+// Section styles live in sections/, one partial per block or template.
+
+@use 'reset';
+@use 'helpers';
+@use 'text-defaults';
+@use 'buttons';
+@use 'forms';
+
+@use 'sections/header';
+@use 'sections/footer';
+@use 'sections/banner';
+@use 'sections/ticker';
+@use 'sections/intro-content';
+@use 'sections/cards';
+@use 'sections/icon-grid';
+@use 'sections/repeater-content';
+@use 'sections/timeline';
+@use 'sections/logo-grid';
+@use 'sections/gallery';
+@use 'sections/testimonials';
+@use 'sections/jobs';
+@use 'sections/news';
+@use 'sections/form-section';
+@use 'sections/numbered-sections';
+@use 'sections/slider';
+@use 'sections/edit-button';
+
+:root {
+  --font-secondary: var(--font-primary);
+}

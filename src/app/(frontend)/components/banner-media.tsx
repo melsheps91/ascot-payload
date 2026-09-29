@@ -5,6 +5,8 @@ import { useEffect, useRef, useState } from 'react'
 
 import type { Media } from '@/payload-types'
 
+import { type ImagePosition, objectPosition } from './shared/media'
+
 export type BannerVideo =
   | { kind: 'youtube'; id: string }
   | { kind: 'local'; src: string; poster?: string | null }
@@ -14,7 +16,15 @@ const youtubeEmbed = (id: string, params: Record<string, string>) =>
 
 // Stands in for the theme's backstretch slider: a background video, or images that
 // fade every 4s (duration 4000, fade 750).
-export function BannerSlideshow({ images, video }: { images: Media[]; video: BannerVideo | null }) {
+export function BannerSlideshow({
+  images,
+  video,
+  position,
+}: {
+  images: Media[]
+  video: BannerVideo | null
+  position?: ImagePosition | null
+}) {
   const [active, setActive] = useState(0)
 
   useEffect(() => {
@@ -75,6 +85,7 @@ export function BannerSlideshow({ images, video }: { images: Media[]; video: Ban
             priority={i === 0}
             sizes="100vw"
             src={image.url!}
+            style={{ objectPosition: objectPosition(image, position ?? 'focal') }}
           />
         </div>
       ))}

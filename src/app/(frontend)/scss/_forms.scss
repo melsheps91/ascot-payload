@@ -1,0 +1,249 @@
+// CleanBuildPro scss/_forms.scss, restyled for the redesign's rounded fields.
+@use 'vars' as *;
+@use 'mixins' as *;
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  .form-title {
+    font-size: 28px;
+    font-weight: 300;
+    letter-spacing: -0.02em;
+  }
+  .form-subtitle {
+    margin-top: -14px;
+    font-size: 14px;
+    opacity: 0.75;
+  }
+  .fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .field {
+    flex: 1 1 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    &.half {
+      flex: 1 1 calc(50% - 6px);
+      min-width: min(100%, 200px);
+    }
+  }
+  .field-label {
+    font-size: 14px;
+    font-weight: 500;
+  }
+  input:not([type='checkbox'], [type='radio'], [type='file']),
+  select,
+  textarea {
+    width: 100%;
+    padding: 16px 20px;
+    border: 1px solid $col-border-dark;
+    border-radius: $radius-small;
+    background: $col-white;
+    color: $col-black;
+    font: inherit;
+    font-size: 16px;
+    font-weight: 300;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    &:focus {
+      border-color: $col-secondary;
+      box-shadow: 0 0 0 3px rgba($col-secondary, 0.15);
+    }
+    @include placeholder {
+      color: $col-grey;
+    }
+  }
+  textarea {
+    resize: vertical;
+    min-height: 120px;
+  }
+  .choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+    input:focus-visible + .pill {
+      outline: 2px solid currentColor;
+      outline-offset: 2px;
+    }
+    input:checked + .pill {
+      background: $col-black;
+      border-color: $col-black;
+      color: $col-white;
+      font-weight: 500;
+    }
+  }
+  .checkbox {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 13px;
+    line-height: 1.6;
+    color: $col-text;
+    input {
+      margin-top: 3px;
+      accent-color: $col-black;
+    }
+  }
+  .upload {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    border: 1px dashed $col-border-dark;
+    border-radius: $radius-small;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+    &:hover,
+    &:focus-within {
+      border-color: $col-black;
+    }
+    input {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+    .upload-icon {
+      flex: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: $col-light-grey;
+    }
+    .upload-text {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+      strong {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      small {
+        font-size: 13px;
+        opacity: 0.7;
+      }
+    }
+  }
+  .form-message {
+    font-size: 13px;
+    line-height: 1.6;
+    color: $col-grey;
+    a {
+      border-bottom: 1px solid currentColor;
+    }
+  }
+  .form-error {
+    padding: 14px 18px;
+    border-radius: $radius-small;
+    background: rgba($col-error, 0.08);
+    color: $col-error;
+    font-size: 14px;
+  }
+  button[type='submit'] {
+    width: 100%;
+    &:disabled {
+      opacity: 0.6;
+      cursor: progress;
+    }
+  }
+
+  // Form inside a navy panel (job applications).
+  &.on-dark {
+    .field-label,
+    .form-title {
+      color: $col-white;
+    }
+    .form-subtitle,
+    .checkbox,
+    .form-message {
+      color: rgba($col-white, 0.85);
+    }
+    input:not([type='checkbox'], [type='radio'], [type='file']),
+    select,
+    textarea {
+      border-color: rgba($col-white, 0.25);
+    }
+    .checkbox input {
+      accent-color: $col-white;
+    }
+    .choices {
+      .pill {
+        border-color: rgba($col-white, 0.4);
+        color: $col-white;
+      }
+      input:checked + .pill {
+        background: $col-white;
+        border-color: $col-white;
+        color: $col-black;
+      }
+    }
+    .upload {
+      border-color: rgba($col-white, 0.45);
+      color: $col-white;
+      &:hover,
+      &:focus-within {
+        border-color: $col-white;
+      }
+      .upload-icon {
+        background: rgba($col-white, 0.12);
+      }
+    }
+    .form-message a {
+      color: $col-white;
+    }
+    .form-error {
+      background: rgba($col-white, 0.12);
+      color: $col-white;
+    }
+    button[type='submit'] {
+      background: $col-white;
+      border-color: $col-white;
+      color: $col-black;
+      &:hover {
+        background: $col-pale;
+      }
+    }
+  }
+}
+
+// Shown in place of the form once it's sent.
+.form-success {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 40px 0;
+  .tick {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: $col-black;
+    color: $col-white;
+    font-size: 24px;
+  }
+  .content {
+    font-size: 16px;
+  }
+  .on-dark & .tick {
+    background: $col-white;
+    color: $col-black;
+  }
+}

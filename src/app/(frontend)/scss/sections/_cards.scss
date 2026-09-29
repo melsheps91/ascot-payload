@@ -1,0 +1,87 @@
+@use '../vars' as *;
+@use '../mixins' as *;
+
+///////////////////////////////////////////////
+//////  CARDS
+//////////////////////////////////////////////
+
+.product-cards {
+  @include auto-grid(320px, 20px);
+}
+
+.product.card {
+  position: relative;
+  display: block;
+  height: 560px;
+  border-radius: $radius;
+  overflow: hidden;
+  background: $col-primary;
+  color: $col-white;
+  transition: transform 0.5s $ease-card;
+  @include max-width(600px) {
+    height: 460px;
+  }
+  &:hover {
+    transform: translateY(-8px);
+  }
+
+  .image {
+    position: absolute;
+    inset: 0;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba($col-primary, 0) 35%, rgba($col-primary, 0.95) 100%);
+    pointer-events: none;
+  }
+
+  .card-tag {
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    z-index: 1;
+    @include eyebrow();
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    padding: 8px 14px;
+    border-radius: $radius-pill;
+    background: rgba($col-white, 0.14);
+    backdrop-filter: blur(10px);
+  }
+
+  .card-text {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 32px;
+  }
+
+  .card-text-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  h3 {
+    font-size: 30px;
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  p {
+    max-width: 300px;
+    font-size: 15px;
+    line-height: 1.55;
+    color: rgba($col-white, 0.88);
+  }
+}

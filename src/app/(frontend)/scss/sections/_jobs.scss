@@ -1,0 +1,223 @@
+@use '../vars' as *;
+@use '../mixins' as *;
+
+///////////////////////////////////////////////
+//////  JOBS LIST
+//////////////////////////////////////////////
+
+.jobs-filter {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 12px;
+  margin-bottom: 32px;
+  padding: 12px;
+  border-radius: $radius;
+  background: $col-light-grey;
+  &.form input,
+  &.form select {
+    padding: 18px 22px;
+    border-radius: $radius-pill;
+  }
+}
+
+.jobs {
+  border-top: 1px solid $col-border;
+}
+
+.job {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 24px;
+  align-items: center;
+  padding: 28px 8px;
+  border-bottom: 1px solid $col-border;
+  transition: padding 0.3s ease, background 0.3s ease;
+  &:hover {
+    padding-left: 20px;
+    background: $col-lighter-grey;
+  }
+  @include max-width(700px) {
+    grid-template-columns: 1fr auto;
+    gap: 6px 16px;
+    .job-meta {
+      grid-column: 1;
+    }
+    .job-arrow {
+      grid-column: 2;
+      grid-row: 1 / span 3;
+    }
+  }
+}
+
+.job-title {
+  font-size: clamp(18px, 1.8vw, 24px);
+  font-weight: 400;
+}
+
+.job-meta {
+  font-size: 14px;
+  color: $col-text;
+}
+
+.job-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: $col-primary;
+  color: $col-white;
+}
+
+.jobs-empty {
+  padding: 40px 8px;
+  color: $col-text;
+}
+
+.jobs-cta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 32px;
+  margin-top: 48px;
+  padding: clamp(32px, 4vw, 56px);
+  border-radius: $radius;
+  .jobs-cta-text {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 640px;
+  }
+  h3 {
+    font-size: clamp(26px, 2.6vw, 36px);
+    font-weight: 300;
+    letter-spacing: -0.02em;
+  }
+  p {
+    line-height: 1.7;
+    color: rgba($col-white, 0.85);
+  }
+}
+
+///////////////////////////////////////////////
+//////  JOB PAGE
+//////////////////////////////////////////////
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  &:hover {
+    color: $col-pale;
+  }
+}
+
+.job-header-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 32px;
+  padding-top: 200px;
+  padding-bottom: 72px;
+  h1 {
+    @include display(clamp(48px, 7vw, 112px), 200, 0.98, -0.04em);
+  }
+}
+
+.job-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-self: stretch;
+  padding-top: 32px;
+  border-top: 1px solid rgba($col-white, 0.2);
+  .pill {
+    padding: 12px 20px;
+    border-color: rgba($col-white, 0.35);
+  }
+}
+
+.job-body {
+  @include auto-grid(460px, clamp(48px, 6vw, 96px));
+  align-items: start;
+}
+
+.job-details {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+.job-summary {
+  font-size: clamp(22px, 2vw, 28px);
+  font-weight: 300;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  text-wrap: pretty;
+}
+
+.job-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  ul {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid $col-border;
+    font-size: 17px;
+    line-height: 1.6;
+    color: $col-text;
+    i {
+      margin-top: 5px;
+      color: $col-secondary;
+    }
+  }
+  &.bullets li i {
+    margin-top: 10px;
+    font-size: 7px;
+  }
+}
+
+.job-why {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 36px;
+  border-radius: $radius;
+  background: $col-light-grey;
+  h2 {
+    font-size: 22px;
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+  p {
+    line-height: 1.7;
+    color: $col-text;
+  }
+}
+
+.apply-panel {
+  position: sticky;
+  top: 32px;
+  padding: clamp(28px, 3.4vw, 44px);
+  border-radius: $radius-large;
+  scroll-margin-top: 32px;
+  .form-title {
+    font-size: 30px;
+  }
+  @include max-width(1000px) {
+    position: static;
+  }
+}

@@ -1,0 +1,45 @@
+// CleanBuildPro scss/_vars.scss, re-skinned for the Ascot Group redesign.
+
+// Container helpers
+$container-large-width: 1760px;
+$container-width: 1480px;
+$container-medium-width: 1280px;
+$container-small-width: 1080px;
+$gutter: clamp(20px, 4vw, 56px);
+
+// Section spacing
+$section-pad: clamp(80px, 10vw, 160px);
+$header-clearance: 180px;
+
+// Borders
+$radius: 24px;
+$radius-small: 16px;
+$radius-large: 32px;
+$radius-pill: 64px;
+
+// General Colours
+$col-grey: #4a5870;
+$col-light-grey: #f3f5f8;
+$col-lighter-grey: #f8f9fb;
+$col-black: #0b1e3a;
+$col-white: #ffffff;
+
+// Main Colours
+$col-primary: #0b1e3a; // navy
+$col-secondary: #1e3f73; // mid blue
+$col-primary-dark: #07162c; // footer
+$col-primary-hover: #132b52;
+$col-sky: #9fb4d6; // eyebrows on navy
+$col-pale: #dce4f1; // hover on navy
+$col-text: #2b3b55;
+$col-border: #e3e7ee;
+$col-border-dark: #cbd3e0;
+
+// Validation Colours
+$col-success: #2ecc71;
+$col-error: #c0392b;
+$col-warning: #e67e22;
+
+// Easings
+$ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+$ease-card: cubic-bezier(0.2, 0.7, 0.2, 1);

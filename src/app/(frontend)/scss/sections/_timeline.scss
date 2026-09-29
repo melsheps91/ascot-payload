@@ -1,0 +1,62 @@
+@use '../vars' as *;
+@use '../mixins' as *;
+
+///////////////////////////////////////////////
+//////  TIMELINE
+//////////////////////////////////////////////
+
+.timeline-grid {
+  @include auto-grid(420px, clamp(40px, 6vw, 120px));
+  align-items: start;
+}
+
+.timeline-intro {
+  position: sticky;
+  top: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  h2 {
+    @include display(clamp(34px, 4vw, 60px), 300, 1.08, -0.025em);
+  }
+  @include max-width(900px) {
+    position: static;
+  }
+}
+
+.timeline-item {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 32px;
+  padding: 36px 0;
+  border-top: 1px solid $col-border;
+  @include max-width(500px) {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+.timeline-year {
+  font-size: clamp(32px, 3vw, 44px);
+  font-weight: 200;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: $col-secondary;
+}
+
+.timeline-text {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  h3 {
+    font-size: 22px;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+  p {
+    font-size: 16px;
+    line-height: 1.7;
+    color: $col-text;
+    text-wrap: pretty;
+  }
+}

@@ -1,0 +1,118 @@
+@use '../vars' as *;
+@use '../mixins' as *;
+
+///////////////////////////////////////////////
+//////  FOOTER
+//////////////////////////////////////////////
+
+.main-footer {
+  background: $col-primary-dark;
+  color: $col-white;
+  padding: 96px 0 40px;
+
+  .footer-top {
+    @include auto-grid(220px, 48px);
+    padding-bottom: 64px;
+    border-bottom: 1px solid rgba($col-white, 0.14);
+  }
+
+  .footer-brand {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .footer-logo {
+    width: auto;
+    height: 64px;
+    align-self: flex-start;
+  }
+
+  .footer-badge {
+    position: relative;
+    width: 120px;
+    height: 58px;
+    padding: 6px;
+    border-radius: 8px;
+    background: $col-white;
+  }
+
+  .footer-col {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    font-size: 15px;
+    line-height: 1.6;
+    ul {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    a,
+    address {
+      color: rgba($col-white, 0.85);
+      font-style: normal;
+    }
+    a:hover {
+      color: $col-white;
+    }
+    address span {
+      display: block;
+    }
+  }
+
+  .footer-heading {
+    @include eyebrow();
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: $col-sky;
+  }
+
+  .footer-col .footer-phone {
+    font-size: 28px;
+    font-weight: 200;
+    letter-spacing: -0.02em;
+    color: $col-white;
+    &:hover {
+      color: $col-pale;
+    }
+  }
+
+  .social {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+    a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border: 1px solid rgba($col-white, 0.3);
+      border-radius: 50%;
+      color: $col-white;
+      &:hover {
+        background: $col-white;
+        color: $col-primary-dark;
+      }
+    }
+  }
+
+  .footer-bottom {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 12px 28px;
+    padding-top: 32px;
+    font-size: 13px;
+    color: rgba($col-white, 0.7);
+    ul {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+    }
+    a:hover {
+      color: $col-white;
+    }
+  }
+}
