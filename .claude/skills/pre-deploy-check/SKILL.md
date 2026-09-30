@@ -41,7 +41,8 @@ Fix everything it flags before moving on.
 These can't be checked from the repo. Confirm each one, in order, on every deploy:
 
 - [ ] **`NEXT_PUBLIC_SERVER_URL` is a literal URL**, never `${...}` bind-variable syntax. It's inlined at build time, when App Platform can't resolve bind variables. Scope it Build and Run Time.
-- [ ] **`DATABASE_URL` is the literal connection string** for this site's own scoped database user (cluster → Users & Databases), never a `${component.DATABASE_URL}` binding. Set `DATABASE_CA_CERT` to the cluster's CA certificate.
+- [ ] **`DATABASE_URL` is the literal connection string** for this site's own scoped database user (cluster → Users & Databases), never a `${component.DATABASE_URL}` binding.
+- [ ] **`DATABASE_CA_CERT` holds the certificate's contents** (the text from `-----BEGIN CERTIFICATE-----` to `-----END CERTIFICATE-----`), never a file path; it's passed straight to Postgres as the certificate. From a terminal: `DATABASE_CA_CERT="$(cat ~/Downloads/ca-certificate.crt)"`. Ascot, 2026-09-30.
 - [ ] **The app is a Trusted Source** on the database cluster. Without it the app builds and goes Active, then fails on its first request.
 - [ ] **New migrations are applied by hand.** Add your machine as a Trusted Source, then run `pnpm migrate` with this site's `DATABASE_URL` and `DATABASE_CA_CERT`. Migrations never run automatically.
 - [ ] **Spaces variables are set:** `S3_BUCKET`, `S3_ENDPOINT` (e.g. `https://lon1.digitaloceanspaces.com`), `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`. `S3_PREFIX` is optional and defaults to `ascot-payload`. If you set it, it must be unique to this site: the bucket is shared, and prefixes keep each site's files apart.
@@ -56,20 +57,31 @@ These can't be checked from the repo. Confirm each one, in order, on every deplo
 The production database should be an exact copy of the local one, migrations table included, so later `pnpm migrate` runs know what's already applied.
 
 1. In the cluster, create this site's own database and user (never the cluster's default database), and add your machine as a Trusted Source.
-2. Dump local Postgres, skipping login sessions:
+2. **Let the site user create tables.** New databases are owned by `doadmin`, and since Postgres 15 other users can't create tables in `public`. Run once, **as doadmin** (its connection string: cluster → Connection details, User = doadmin, Database = this site's):
+   ```
+   psql "<doadmin connection string>" -c "GRANT USAGE, CREATE ON SCHEMA public TO <site user>;"
+   ```
+   It must print only `GRANT`; "no privileges were granted" means it ran as the site user. Never load or migrate as doadmin: it would own the tables and the site user couldn't use them. Ascot, 2026-09-30.
+3. Dump local Postgres, skipping login sessions:
    ```
    pg_dump --no-owner --no-privileges --exclude-table-data=users_sessions -d ascot_payload -f ascot.sql
    ```
-3. Load it into the new, empty production database:
+4. Load it into the new, empty production database, **as the site user**, in one transaction:
    ```
-   psql "<production DATABASE_URL>" -v ON_ERROR_STOP=1 -f ascot.sql
+   psql "<production DATABASE_URL>" -v ON_ERROR_STOP=1 --single-transaction -f ascot.sql
    ```
-4. Upload the files. Images go public under the prefix; CVs go private under `<prefix>/cvs`. Using the AWS CLI with Spaces keys (the Spaces web UI works too):
+5. Remove the local dev-push marker the copy brings with it, or the next `pnpm migrate` against production stops at the dev-mode prompt. Then confirm both migrations show as run:
+   ```
+   psql "<production DATABASE_URL>" -c "DELETE FROM payload_migrations WHERE name = 'dev' AND batch = -1;"
+   DATABASE_URL="<production DATABASE_URL>" DATABASE_CA_CERT="$(cat ca-certificate.crt)" pnpm payload migrate:status
+   ```
+6. Upload the files. Images go public under the prefix; CVs go private under `<prefix>/cvs`. Using the AWS CLI with Spaces keys (the Spaces web UI works too):
    ```
    aws s3 sync media s3://<bucket>/ascot-payload/ --endpoint-url https://lon1.digitaloceanspaces.com --acl public-read
    aws s3 sync cvs s3://<bucket>/ascot-payload/cvs/ --endpoint-url https://lon1.digitaloceanspaces.com --acl private
    ```
-5. Delete `ascot.sql` afterwards: it contains form submissions and users' password hashes.
+7. Delete `ascot.sql` afterwards: it contains form submissions and users' password hashes.
+8. Keep connection strings out of chats and tickets. If one is pasted anywhere, reset that user's password (cluster → Users & Databases → ⋯ → Reset password).
 
 ## Local development notes
 
