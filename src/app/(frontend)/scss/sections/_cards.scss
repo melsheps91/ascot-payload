@@ -45,11 +45,16 @@
     z-index: 1;
     @include eyebrow();
     font-size: 12px;
-    letter-spacing: 0.2em;
-    padding: 8px 14px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    line-height: 1;
+    padding: 9px 14px;
+    border: 1px solid rgba($col-white, 0.25);
     border-radius: $radius-pill;
-    background: rgba($col-white, 0.14);
-    backdrop-filter: blur(10px);
+    // Solid enough to read over light photos (sky, white walls), still lets the image through.
+    background: rgba($col-primary, 0.78);
+    backdrop-filter: blur(8px);
+    color: $col-white;
   }
 
   .card-text {
