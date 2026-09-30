@@ -101,6 +101,17 @@ else
   say_fail "couldn't confirm the migration check ran (is local Postgres running? brew services start postgresql@17). Log: $LOG_DIR/migrate.log"
 fi
 
+# 5b. The admin import map must list every admin component, including ones plugins add.
+# Development works around a missing entry; production renders a blank admin instead.
+# Ascot, 2026-09-30: storage-s3's S3ClientUploadHandler was missing, and /admin was blank.
+IMPORT_MAP="src/app/(payload)/admin/importMap.js"
+pnpm exec cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap >"$LOG_DIR/importmap.log" 2>&1
+if git diff --quiet -- "$IMPORT_MAP"; then
+  say_ok "the admin import map is up to date"
+else
+  say_fail "the admin import map was out of date (it has now been regenerated). Commit $IMPORT_MAP"
+fi
+
 # 6. TypeScript.
 if pnpm exec tsc --noEmit >"$LOG_DIR/tsc.log" 2>&1; then
   say_ok "tsc --noEmit is clean"

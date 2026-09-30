@@ -30,6 +30,7 @@ import { ViewSiteLink as ViewSiteLink_ee7b6d4120a75efccb2880097dc3fa91 } from '.
 import { AcfImportNavLink as AcfImportNavLink_a801fa2f9e715ae2765ce0ce836fafb4 } from '../../../components/admin/AcfImportNavLink'
 import { Dashboard as Dashboard_16b88e9b8c48e393fa86591406efd08f } from '../../../components/admin/Dashboard'
 import { BeforeLogin as BeforeLogin_a45d07f83a34d60e73de75974a0827f8 } from '../../../components/admin/branding/BeforeLogin'
+import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
 import { AcfImportView as AcfImportView_6cad561e856b2c03ee3d6ab8096aa200 } from '../../../components/admin/AcfImportView'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
@@ -67,6 +68,7 @@ export const importMap = {
   "/components/admin/AcfImportNavLink#AcfImportNavLink": AcfImportNavLink_a801fa2f9e715ae2765ce0ce836fafb4,
   "/components/admin/Dashboard#Dashboard": Dashboard_16b88e9b8c48e393fa86591406efd08f,
   "/components/admin/branding/BeforeLogin#BeforeLogin": BeforeLogin_a45d07f83a34d60e73de75974a0827f8,
+  "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24,
   "/components/admin/AcfImportView#AcfImportView": AcfImportView_6cad561e856b2c03ee3d6ab8096aa200,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

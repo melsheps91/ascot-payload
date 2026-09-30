@@ -24,6 +24,7 @@ It checks, from the repo:
 - **`output: 'standalone'`** in `next.config.ts`. The Dockerfile's last stage copies `.next/standalone`. Ascot, 2026-09-30: it was missing.
 - **The database adapter is Postgres.** App Platform wipes its disk on every deploy, so SQLite can't be used. Ascot, 2026-09-30.
 - **Migrations match the schema.** It generates a throwaway migration; if a file appears, the schema has drifted. Delete that file and create a properly named one: `pnpm migrate:create <descriptive-name>`. Starter, 2026-09-28.
+- **The admin import map is up to date.** It regenerates `importMap.js` and fails if that changed it. Development works around a missing entry, but production renders a blank admin with no browser error. Ascot, 2026-09-30: after adding Spaces storage, its upload component was missing and `/admin` was blank.
 - **`tsc --noEmit` is clean.**
 - **Nothing touches Payload at build time.** The DO build has no database and no `PAYLOAD_SECRET`. No `force-static`, every page and the layout under `src/app/(frontend)` export `dynamic = 'force-dynamic'` (segment config is per file, not inherited), and there's no unwrapped `generateStaticParams`. Starter, 2026-09-28; Ascot, 2026-09-30 ("missing secret key" prerendering `/`).
 - **A production build succeeds with no `.env`.** The closest local match to the Docker build, and the check that catches the previous point directly.
