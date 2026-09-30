@@ -281,6 +281,8 @@ export interface Media {
    * Say what the image shows, e.g. "The team at the Spring BBQ". Read out by screen readers and used by search engines.
    */
   alt: string;
+  prefix?: string | null;
+  _objectKey?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -1197,6 +1199,8 @@ export interface Job {
  */
 export interface Cv {
   id: number;
+  prefix?: string | null;
+  _objectKey?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -1858,6 +1862,8 @@ export interface NumberedSectionsBlockSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
+  prefix?: T;
+  _objectKey?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -1956,6 +1962,8 @@ export interface JobsSelect<T extends boolean = true> {
  * via the `definition` "cvs_select".
  */
 export interface CvsSelect<T extends boolean = true> {
+  prefix?: T;
+  _objectKey?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;

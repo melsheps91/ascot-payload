@@ -1,6 +1,7 @@
-import { sqliteAdapter } from '@payloadcms/db-sqlite'
+import { postgresAdapter } from '@payloadcms/db-postgres'
 import { formBuilderPlugin } from '@payloadcms/plugin-form-builder'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { s3Storage } from '@payloadcms/storage-s3'
 import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
@@ -24,6 +25,41 @@ import { acfImportEndpoints } from './endpoints/acfImport'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 const isDev = process.env.NODE_ENV !== 'production'
+
+// DigitalOcean signs managed Postgres certificates with its own CA, which Node doesn't
+// trust by default. `sslmode` in the URL overrides the `ssl.ca` option, so it's stripped
+// once a CA certificate is supplied. (Same approach as the Payload Starter.)
+const databaseCACert = process.env.DATABASE_CA_CERT
+function connectionString() {
+  const raw = process.env.DATABASE_URL || ''
+  if (!raw || !databaseCACert) return raw
+  const url = new URL(raw)
+  url.searchParams.delete('sslmode')
+  return url.toString()
+}
+
+// DigitalOcean Spaces (S3-compatible), so uploads survive redeploys. Switched on by
+// S3_BUCKET; off locally, where files stay on disk in media/ and cvs/. S3_PREFIX
+// namespaces this site inside a bucket shared with other sites (must be unique per site).
+// alwaysInsertFields keeps the plugin's `prefix` column in the schema either way, so
+// local migrations match production.
+// A fixed default keeps the schema and stored file keys the same in every environment.
+const S3_PREFIX = process.env.S3_PREFIX || 'ascot-payload'
+const spaces = {
+  enabled: Boolean(process.env.S3_BUCKET),
+  alwaysInsertFields: true,
+  bucket: process.env.S3_BUCKET || '',
+  config: {
+    endpoint: process.env.S3_ENDPOINT,
+    // DigitalOcean requires this literal value; the real region is in the endpoint.
+    region: 'us-east-1',
+    credentials: {
+      accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
+      secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
+    },
+    forcePathStyle: false,
+  },
+}
 
 export default buildConfig({
   admin: {
@@ -64,10 +100,15 @@ export default buildConfig({
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
-  db: sqliteAdapter({
-    client: {
-      url: process.env.DATABASE_URL || '',
+  db: postgresAdapter({
+    pool: {
+      connectionString: connectionString(),
+      ...(databaseCACert && { ssl: { ca: databaseCACert } }),
     },
+    // Development pushes schema changes automatically. Production never does:
+    // apply migrations by hand with `pnpm payload migrate` (prodMigrations is
+    // deliberately not set; see .claude/skills/pre-deploy-check).
+    push: isDev,
   }),
   sharp,
   upload: {
@@ -76,6 +117,23 @@ export default buildConfig({
     },
   },
   plugins: [
+    // Images: public, served straight from Spaces.
+    s3Storage({
+      ...spaces,
+      acl: 'public-read',
+      collections: {
+        media: { prefix: S3_PREFIX, disablePayloadAccessControl: true },
+      },
+    }),
+    // CVs: private. Downloads go through Payload's own file route, so the collection's
+    // access control (logged-in users only) still applies.
+    s3Storage({
+      ...spaces,
+      acl: 'private',
+      collections: {
+        cvs: { prefix: `${S3_PREFIX}/cvs` },
+      },
+    }),
     formBuilderPlugin({
       fields: {
         payment: false,

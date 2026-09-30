@@ -18,21 +18,21 @@ Arguments: `$ARGUMENTS`
 ## Step 2: Dry run and review
 
 ```bash
-npm run acf:import -- <files> --dry-run
+pnpm acf:import <files> --dry-run
 ```
 
 Check the output with the user before writing anything:
 
 - **Block or global.** Groups on an ACF options page become Payload globals, and everything else becomes a page block. A warning saying the group is attached to a post type, menu item or user means it probably belongs as fields on a collection, not a block. Ask before converting those. `--as block|global` overrides the type.
 - **TODO warnings** mean a field was left as a comment, e.g. a relationship to a collection that doesn't exist yet. Say which ones and offer to create the collection first.
-- **Existing files** are skipped. Overwriting one with `--force` changes its schema, and the next `npm run dev` drops the removed columns and their data. Get explicit confirmation, then back up the database first: `cp ascot-payload.db ascot-payload.db.bak-$(date +%Y%m%d%H%M)`.
+- **Existing files** are skipped. Overwriting one with `--force` changes its schema, and the next `pnpm dev` drops the removed columns and their data. Get explicit confirmation, then back up the database first: `pg_dump -d ascot_payload -f backup-$(date +%Y%m%d%H%M).sql`.
 
 ## Step 3: Convert
 
-(The user can also do this step themselves at `/admin/acf-import` while `npm run dev` is running. If they've already imported there, skip to Step 4.)
+(The user can also do this step themselves at `/admin/acf-import` while `pnpm dev` is running. If they've already imported there, skip to Step 4.)
 
 ```bash
-npm run acf:import -- <files>
+pnpm acf:import <files>
 ```
 
 This writes `src/blocks/<Name>.ts` (or `src/globals/<Name>.ts`), registers it in `Pages.ts` `layout.blocks` (or in `payload.config.ts` `globals`) and regenerates `src/payload-types.ts`. For blocks it also creates `src/app/(frontend)/components/<kebab-name>.tsx`, a stub that dumps the block JSON. It also adds a `case` to the switch in `src/app/(frontend)/components/render-blocks.tsx`.
@@ -72,8 +72,9 @@ Styles are Sass in `src/app/(frontend)/scss/`. The theme foundation partials (`_
 ## Step 6: Verify
 
 1. `npx tsc --noEmit` must pass.
-2. `npm run test:int`.
-3. Ask the user to run `npm run dev` in their own terminal. It pushes the new tables to `ascot-payload.db` and may ask "create or rename column?" questions that block every request until answered. If the push fails with "index … already exists", stop the server and run `npm run db:push`.
+2. `pnpm test:int`.
+3. Ask the user to run `pnpm dev` in their own terminal. It pushes the new tables to the local Postgres database and may ask "create or rename column?" questions that block every request until answered.
+3b. Create a migration for the new schema (`pnpm migrate:create add-<block-name>`) and commit it; production only changes through migrations.
 4. Add the block to a page in `/admin` with dummy content, and check the render at the page's URL against the WordPress version.
 
 Tell the user which sections were converted, what was skipped or left as TODO, and anything still unported (JS behaviour, global fallbacks, missing collections).

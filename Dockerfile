@@ -1,4 +1,4 @@
-# To use this Dockerfile, you have to set `output: 'standalone'` in your next.config.mjs file.
+# To use this Dockerfile, you have to set `output: 'standalone'` in your next.config.js file.
 # From https://github.com/vercel/next.js/blob/canary/examples/with-docker/Dockerfile
 
 FROM node:22.17.0-alpine AS base
@@ -10,11 +10,24 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager
-COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
+# pnpm-workspace.yaml carries the project's pnpm-specific config (its
+# `allowBuilds` list of trusted native-dependency build scripts among other
+# things) - without it in this COPY, pnpm in this stage can't see that
+# config at all and blocks every native build script it doesn't already
+# trust by default (confirmed 2026-09-28: sharp built fine, but
+# @parcel/watcher/esbuild/unrs-resolver failed with ERR_PNPM_IGNORED_BUILDS).
+COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* pnpm-workspace.yaml* .npmrc* ./
+# Corepack's own on-demand pnpm download is unreliable in DO App Platform's
+# Kaniko-based Dockerfile builder (fails with "Cannot find module .../pnpm.cjs"
+# regardless of which version it's asked to fetch — confirmed 2026-09-28).
+# npm install -g uses the same registry client that already reaches the
+# registry fine elsewhere in this same build, so it sidesteps the issue
+# entirely. The version comes from package.json's own packageManager pin,
+# so there's still one source of truth for which pnpm version this project uses.
 RUN \
   if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
   elif [ -f package-lock.json ]; then npm ci; \
-  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i --frozen-lockfile; \
+  elif [ -f pnpm-lock.yaml ]; then npm install -g pnpm@$(node -p "require('./package.json').packageManager.split('@')[1]") && pnpm i --frozen-lockfile; \
   else echo "Lockfile not found." && exit 1; \
   fi
 
@@ -25,15 +38,22 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# NEXT_PUBLIC_* variables are inlined into the client bundle at build time,
+# so this has to be a build ARG, not just a runtime ENV on the app.
+ARG NEXT_PUBLIC_SERVER_URL
+ENV NEXT_PUBLIC_SERVER_URL=$NEXT_PUBLIC_SERVER_URL
+
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
 # Uncomment the following line in case you want to disable telemetry during the build.
 # ENV NEXT_TELEMETRY_DISABLED 1
 
+# See the same note in the deps stage above — this stage starts fresh from
+# `base`, so it needs pnpm installed again independently.
 RUN \
   if [ -f yarn.lock ]; then yarn run build; \
   elif [ -f package-lock.json ]; then npm run build; \
-  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm run build; \
+  elif [ -f pnpm-lock.yaml ]; then npm install -g pnpm@$(node -p "require('./package.json').packageManager.split('@')[1]") && pnpm run build; \
   else echo "Lockfile not found." && exit 1; \
   fi
 
