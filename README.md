@@ -50,6 +50,7 @@ Locally, uploaded images and CVs are saved to `media/` and `cvs/`; neither is in
 | `pnpm build` / `pnpm start` | Production build and server. |
 | `pnpm migrate` | Applies pending migrations from `src/migrations`. |
 | `pnpm migrate:create <name>` | Creates a migration from schema changes. Needed before any deploy that changes collections, fields or blocks. |
+| `pnpm spaces:upload [--dry]` | Uploads `media/` (public) and `cvs/` (private) to DigitalOcean Spaces, skipping files already there. Keys go in the git-ignored `.env.spaces`. |
 | `pnpm seed` | Fills every page, article, job, testimonial, form and setting from the design brief. Safe to re-run: seeded records are updated in place, anything else is left alone. **Never run it against production once it has real content.** |
 | `pnpm generate:types` | Regenerates `src/payload-types.ts` after changing a collection, field or block. |
 | `pnpm generate:importmap` | Registers new admin components. |

@@ -54,3 +54,6 @@ node_modules/
 *.db-journal
 *.db.bak-*
 /cvs
+
+# Spaces keys for scripts/upload-to-spaces.ts (never commit)
+.env.spaces

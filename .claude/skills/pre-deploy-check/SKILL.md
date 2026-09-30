@@ -75,11 +75,12 @@ The production database should be an exact copy of the local one, migrations tab
    psql "<production DATABASE_URL>" -c "DELETE FROM payload_migrations WHERE name = 'dev' AND batch = -1;"
    DATABASE_URL="<production DATABASE_URL>" DATABASE_CA_CERT="$(cat ca-certificate.crt)" pnpm payload migrate:status
    ```
-6. Upload the files. Images go public under the prefix; CVs go private under `<prefix>/cvs`. Using the AWS CLI with Spaces keys (the Spaces web UI works too):
+6. Upload the files: images public under the prefix, CVs private under `<prefix>/cvs`. Put the Spaces keys in `.env.spaces` (git-ignored; template in `scripts/upload-to-spaces.ts`), then:
    ```
-   aws s3 sync media s3://<bucket>/ascot-payload/ --endpoint-url https://lon1.digitaloceanspaces.com --acl public-read
-   aws s3 sync cvs s3://<bucket>/ascot-payload/cvs/ --endpoint-url https://lon1.digitaloceanspaces.com --acl private
+   pnpm spaces:upload --dry    # check the list
+   pnpm spaces:upload
    ```
+   Files already in Spaces are skipped, so it's safe to re-run.
 7. Delete `ascot.sql` afterwards: it contains form submissions and users' password hashes.
 8. Keep connection strings out of chats and tickets. If one is pasted anywhere, reset that user's password (cluster → Users & Databases → ⋯ → Reset password).
 
