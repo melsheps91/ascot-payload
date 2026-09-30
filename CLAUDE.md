@@ -57,7 +57,7 @@ Payload 3 runs inside a Next.js App Router app. There is no separate backend.
 
 ## Database (SQLite) caveats
 
-- `DATABASE_URL=file:./ascot-payload.db`. The README, `.env.example` and `docker-compose.yml` still describe MongoDB from the template. Ignore that.
+- `DATABASE_URL=file:./ascot-payload.db` (see `.env.example`). `docker-compose.yml` is left over from the template and describes MongoDB; ignore it.
 - The tests use the same database as dev; there is no separate test database. Integration tests load `.env` through `vitest.setup.ts`, and the e2e `seedTestUser` helper deletes and recreates `dev@payloadcms.com` in `ascot-payload.db`.
 - In dev, Payload pushes schema changes to the database automatically. **Removing or renaming a field or block drops its columns or tables and deletes the data straight away.** Back up `ascot-payload.db` before restructuring.
 - When a change is ambiguous (e.g. moving fields into a group), drizzle asks "create or rename column?" in the dev-server terminal and every request hangs until it's answered. So run `npm run dev` in a terminal someone can interact with, not as a detached background process.
