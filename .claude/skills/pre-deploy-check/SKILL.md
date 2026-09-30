@@ -24,6 +24,7 @@ It checks, from the repo:
 - **`output: 'standalone'`** in `next.config.ts`. The Dockerfile's last stage copies `.next/standalone`. Ascot, 2026-09-30: it was missing.
 - **The database adapter is Postgres.** App Platform wipes its disk on every deploy, so SQLite can't be used. Ascot, 2026-09-30.
 - **Migrations match the schema.** It generates a throwaway migration; if a file appears, the schema has drifted. Delete that file and create a properly named one: `pnpm migrate:create <descriptive-name>`. Starter, 2026-09-28.
+- **The admin import map is up to date.** It regenerates `importMap.js` and fails if that changed it. Development works around a missing entry, but production renders a blank admin with no browser error. Ascot, 2026-09-30: after adding Spaces storage, its upload component was missing and `/admin` was blank.
 - **`tsc --noEmit` is clean.**
 - **Nothing touches Payload at build time.** The DO build has no database and no `PAYLOAD_SECRET`. No `force-static`, every page and the layout under `src/app/(frontend)` export `dynamic = 'force-dynamic'` (segment config is per file, not inherited), and there's no unwrapped `generateStaticParams`. Starter, 2026-09-28; Ascot, 2026-09-30 ("missing secret key" prerendering `/`).
 - **A production build succeeds with no `.env`.** The closest local match to the Docker build, and the check that catches the previous point directly.
@@ -75,11 +76,12 @@ The production database should be an exact copy of the local one, migrations tab
    psql "<production DATABASE_URL>" -c "DELETE FROM payload_migrations WHERE name = 'dev' AND batch = -1;"
    DATABASE_URL="<production DATABASE_URL>" DATABASE_CA_CERT="$(cat ca-certificate.crt)" pnpm payload migrate:status
    ```
-6. Upload the files. Images go public under the prefix; CVs go private under `<prefix>/cvs`. Using the AWS CLI with Spaces keys (the Spaces web UI works too):
+6. Upload the files: images public under the prefix, CVs private under `<prefix>/cvs`. Put the Spaces keys in `.env.spaces` (git-ignored; template in `scripts/upload-to-spaces.ts`), then:
    ```
-   aws s3 sync media s3://<bucket>/ascot-payload/ --endpoint-url https://lon1.digitaloceanspaces.com --acl public-read
-   aws s3 sync cvs s3://<bucket>/ascot-payload/cvs/ --endpoint-url https://lon1.digitaloceanspaces.com --acl private
+   pnpm spaces:upload --dry    # check the list
+   pnpm spaces:upload
    ```
+   Files already in Spaces are skipped, so it's safe to re-run.
 7. Delete `ascot.sql` afterwards: it contains form submissions and users' password hashes.
 8. Keep connection strings out of chats and tickets. If one is pasted anywhere, reset that user's password (cluster → Users & Databases → ⋯ → Reset password).
 
