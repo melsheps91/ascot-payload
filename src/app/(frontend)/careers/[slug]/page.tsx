@@ -7,6 +7,11 @@ import { CAREERS_PATH } from '@/lib/routes'
 import { EditButton } from '../../components/edit-button'
 import { JobApplication } from '../job-application'
 
+// Rendered on every request: the DigitalOcean build has no database or PAYLOAD_SECRET,
+// so nothing here may query Payload at build time. Segment config is per file, so each
+// page sets this itself (see .claude/skills/pre-deploy-check).
+export const dynamic = 'force-dynamic'
+
 type Props = { params: Promise<{ slug: string }> }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

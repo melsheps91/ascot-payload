@@ -1,6 +1,6 @@
 # The Ascot Group website
 
-The Ascot Group's website, built on [Payload CMS](https://payloadcms.com) 3 and Next.js 16. It recreates the "Homepage redesign brief" from Claude Design using the structure of [CleanBuild Pro](https://github.com/purplexmarketing/CleanBuildPro), Purplex's WordPress starter theme: its ACF sections become Payload blocks, and its SCSS partials and mixins style the site.
+The Ascot Group's website, built on [Payload CMS](https://payloadcms.com) 3, Next.js 16 and Postgres, and deployed to DigitalOcean App Platform. It recreates the "Homepage redesign brief" from Claude Design using the structure of [CleanBuild Pro](https://github.com/purplexmarketing/CleanBuildPro), Purplex's WordPress starter theme: its ACF sections become Payload blocks, and its SCSS partials and mixins style the site.
 
 Everything on the site is editable in a Purplex-branded admin at `/admin`.
 
@@ -14,42 +14,49 @@ Everything on the site is editable in a Purplex-branded admin at `/admin`.
 - [Editing content](#editing-content)
 - [Forms](#forms)
 - [Styling](#styling)
-- [Database notes](#database-notes)
+- [Database and migrations](#database-and-migrations)
+- [Deploying to DigitalOcean](#deploying-to-digitalocean)
 - [Before launch](#before-launch)
 
 ## Getting started
 
-You need Node.js 20.9 or later.
+You need Node.js 20.9 or later, pnpm 12.5.1 (`npm install -g pnpm@12.5.1`) and Postgres 17.
 
 ```bash
+brew install postgresql@17 && brew services start postgresql@17
+createdb ascot_payload
+
 git clone https://github.com/melsheps91/ascot-payload.git
 cd ascot-payload
 cp .env.example .env      # then set PAYLOAD_SECRET to a long random string
-npm install
-npm run seed              # optional: fills the site with the design's content
-npm run dev
+pnpm install
+pnpm migrate              # builds the database from src/migrations
+pnpm seed                 # optional: fills the site with the design's content
+pnpm dev
 ```
 
 - Website: http://localhost:3000
 - Admin: http://localhost:3000/admin (the first visit asks you to create an admin user)
 
-The database is a single SQLite file (`ascot-payload.db`), created on first run. It, uploaded images (`media/`) and uploaded CVs (`cvs/`) are not in git.
+Locally, uploaded images and CVs are saved to `media/` and `cvs/`; neither is in git. In production they go to DigitalOcean Spaces.
 
-> Run `npm run dev` in a terminal you can type into. If a schema change is ambiguous, Payload asks "create or rename column?" there, and every request waits until it's answered.
+> Run `pnpm dev` in a terminal you can type into. If a schema change is ambiguous, Payload asks "create or rename column?" there, and every request waits until it's answered.
 
 ## Commands
 
 | Command | What it does |
 | --- | --- |
-| `npm run dev` | Development server on port 3000. `npm run devsafe` clears the `.next` cache first. |
-| `npm run build` / `npm run start` | Production build and server. |
-| `npm run seed` | Fills every page, article, job, testimonial, form and setting from the design brief. Safe to re-run: seeded records are updated in place, anything else is left alone. |
-| `npm run db:push` | Applies schema changes when the automatic update fails (see [Database notes](#database-notes)). Add `-- --dry` to preview. Stop `npm run dev` first. |
-| `npm run generate:types` | Regenerates `src/payload-types.ts` after changing a collection, field or block. |
-| `npm run generate:importmap` | Registers new admin components. |
-| `npm run acf:import -- <files> [--dry-run]` | Converts CleanBuild Pro ACF JSON into Payload blocks or globals. Also available in the admin under **Tools → ACF importer** in development. |
-| `npm run test:int` / `npm run test:e2e` | Vitest and Playwright tests. |
-| `npx tsc --noEmit` | Type-check. |
+| `pnpm dev` | Development server on port 3000. `pnpm devsafe` clears the `.next` cache first. |
+| `pnpm build` / `pnpm start` | Production build and server. |
+| `pnpm migrate` | Applies pending migrations from `src/migrations`. |
+| `pnpm migrate:create <name>` | Creates a migration from schema changes. Needed before any deploy that changes collections, fields or blocks. |
+| `pnpm seed` | Fills every page, article, job, testimonial, form and setting from the design brief. Safe to re-run: seeded records are updated in place, anything else is left alone. **Never run it against production once it has real content.** |
+| `pnpm generate:types` | Regenerates `src/payload-types.ts` after changing a collection, field or block. |
+| `pnpm generate:importmap` | Registers new admin components. |
+| `pnpm acf:import <files> [--dry-run]` | Converts CleanBuild Pro ACF JSON into Payload blocks or globals. Also available in the admin under **Tools → ACF importer** in development. |
+| `pnpm test:int` / `pnpm test:e2e` | Vitest and Playwright tests. |
+| `pnpm exec tsc --noEmit` | Type-check. |
+| `bash .claude/skills/pre-deploy-check/check.sh` | The pre-deploy checks. Run before every deploy (see below). |
 
 ## How the site is built
 
@@ -94,6 +101,7 @@ CleanBuild Pro's structure maps directly onto Payload:
 
 ```
 src/
+  migrations/          database migrations (applied with pnpm migrate)
   app/(frontend)/      the website: routes, components, scss/
   app/(payload)/       Payload's admin and API (custom.scss holds the admin styling)
   blocks/              page section configs
@@ -104,7 +112,6 @@ src/
 scripts/
   seed/                the content seed and its images
   acf-to-payload/      the ACF importer
-  push-schema.ts       npm run db:push
 public/admin/          Purplex logos and the block picker thumbnails
 ```
 
@@ -133,19 +140,26 @@ One renderer (`src/app/(frontend)/components/form/`) draws any form in the site'
 - Icons: the Font Awesome 7 Pro kit, loaded in `layout.tsx`. Override the kit with `NEXT_PUBLIC_FONT_AWESOME_KIT`.
 - Sliders use [Embla Carousel](https://www.embla-carousel.com); the video lightbox uses the native `<dialog>` element.
 
-## Database notes
+## Database and migrations
 
-- In development, Payload updates the database automatically when collections or blocks change. **Removing or renaming a field or block deletes its data straight away**, so back up `ascot-payload.db` before restructuring.
-- A drizzle-kit bug writes some `CREATE INDEX` statements twice when it rebuilds a table (for example after adding a collection), so the automatic update fails with "index … already exists" and requests hang. Stop the dev server and run `npm run db:push`, which applies the same changes without the duplicates and refuses anything flagged as data loss.
+- **Development:** Payload updates the local database automatically when collections or blocks change. **Removing or renaming a field or block deletes its data straight away**, so back up first (`pg_dump -d ascot_payload -f backup.sql`).
+- **Production never changes its own schema.** After any schema change, create a migration (`pnpm migrate:create <name>`), commit it, and apply it to production by hand (`pnpm migrate` with the production `DATABASE_URL`).
+- Once `pnpm dev` has run, `pnpm migrate` locally asks whether to continue ("run Payload in dev mode"). Locally you rarely need it, since development keeps the schema current.
 - `docker-compose.yml` is left over from the Payload template and describes MongoDB. It isn't used.
+
+## Deploying to DigitalOcean
+
+The site runs on DigitalOcean App Platform from the `Dockerfile`, with a managed Postgres database (its own database and user in the shared cluster) and Spaces for uploads. Images are public; CVs are stored privately and only reachable through the admin.
+
+Before every deploy, stop `pnpm dev` and run the pre-deploy checks, then work through the dashboard checklist in [`.claude/skills/pre-deploy-check/SKILL.md`](.claude/skills/pre-deploy-check/SKILL.md). That file also covers the environment variables and the first-deploy steps for copying the database and uploads across.
 
 ## Before launch
 
 - [ ] Upload the missing images: brand and client logos, the TEDx and Acquisitions images, the Building Products image and the award badge.
 - [ ] Connect an email service (e.g. SMTP with `@payloadcms/email-nodemailer`, or Resend) so form notification emails send. Until then they're only written to the server log.
 - [ ] Allow the live domain in the Font Awesome kit settings.
-- [ ] Set `NEXT_PUBLIC_SERVER_URL` to the live address (used for share links).
-- [ ] Choose production hosting and a database. SQLite suits a single server; Postgres suits serverless hosting.
+- [ ] Set `NEXT_PUBLIC_SERVER_URL` to the live address (used for share links), as a literal URL.
+- [ ] Create the DigitalOcean app, database and Spaces settings, and copy the content across (see [Deploying to DigitalOcean](#deploying-to-digitalocean)).
 
 ---
 

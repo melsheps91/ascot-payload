@@ -9,6 +9,11 @@ import { Header } from './components/layout/header'
 import { asMedia } from './components/shared/media'
 import './scss/main.scss'
 
+// Rendered on every request: the DigitalOcean build has no database or PAYLOAD_SECRET,
+// so nothing here may query Payload at build time. Segment config is per file, so each
+// page sets this itself (see .claude/skills/pre-deploy-check).
+export const dynamic = 'force-dynamic'
+
 // The redesign sets everything in Montserrat, from 200 (display) to 500 (emphasis).
 const montserrat = Montserrat({
   subsets: ['latin'],

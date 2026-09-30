@@ -8,6 +8,11 @@ import { Emphasis } from '../../components/shared/heading'
 import { EditButton } from '../../components/edit-button'
 import { JobApplication } from '../job-application'
 
+// Rendered on every request: the DigitalOcean build has no database or PAYLOAD_SECRET,
+// so nothing here may query Payload at build time. Segment config is per file, so each
+// page sets this itself (see .claude/skills/pre-deploy-check).
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'Apply for other roles',
 }
