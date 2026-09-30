@@ -1,0 +1,151 @@
+// CleanBuildPro scss/_text-defaults.scss, with the redesign's type.
+@use 'vars' as *;
+@use 'mixins' as *;
+
+html {
+  scroll-behavior: smooth;
+  @media (prefers-reduced-motion: reduce) {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  @include font-primary();
+  font-weight: 300;
+  font-size: 16px;
+  line-height: 1.6;
+  color: $col-black;
+  background: $col-white;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+}
+
+strong,
+b {
+  font-weight: 500;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  strong {
+    font-weight: 500;
+  }
+}
+
+h1 {
+  @include display(clamp(56px, 8vw, 128px), 200, 0.95, -0.04em);
+}
+
+h2 {
+  @include display(clamp(36px, 4.4vw, 68px), 200, 1.05, -0.03em);
+}
+
+h3 {
+  font-size: clamp(22px, 2vw, 30px);
+  letter-spacing: -0.02em;
+}
+
+.eyebrow {
+  @include eyebrow();
+  display: block;
+  color: $col-secondary;
+  .primary-back & {
+    color: $col-sky;
+  }
+}
+
+// The white rule-and-label above banner headings.
+.kicker {
+  @include eyebrow();
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  &::before {
+    content: '';
+    width: 40px;
+    height: 1px;
+    background: currentColor;
+  }
+}
+
+// Rich text and textarea copy.
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  font-size: 18px;
+  line-height: 1.75;
+  color: $col-text;
+  p {
+    text-wrap: pretty;
+  }
+  a {
+    font-weight: 500;
+    color: $col-black;
+    border-bottom: 1px solid currentColor;
+    &:hover {
+      color: $col-secondary;
+    }
+  }
+  ul,
+  ol {
+    padding-left: 1.2em;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  ul { list-style: disc; }
+  ol { list-style: decimal; }
+  h2,
+  h3,
+  h4 {
+    color: $col-black;
+  }
+  .primary-back & {
+    color: rgba($col-white, 0.85);
+    a,
+    h2,
+    h3,
+    h4 {
+      color: $col-white;
+    }
+  }
+}
+
+@keyframes ascot-rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ascot-ticker {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}

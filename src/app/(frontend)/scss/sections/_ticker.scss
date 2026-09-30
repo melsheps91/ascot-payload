@@ -1,0 +1,46 @@
+@use '../vars' as *;
+@use '../mixins' as *;
+
+///////////////////////////////////////////////
+//////  TICKER
+//////////////////////////////////////////////
+
+.ticker-wrap {
+  padding: 26px 0;
+  border-bottom: 1px solid $col-border;
+  overflow: hidden;
+}
+
+.ticker {
+  display: flex;
+  width: max-content;
+  animation: ascot-ticker var(--ticker-duration, 40s) linear infinite;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+  &:hover {
+    animation-play-state: paused;
+  }
+}
+
+.ticker-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 48px;
+  padding-right: 48px;
+  font-size: clamp(24px, 2.6vw, 40px);
+  font-weight: 200;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.ticker-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: $col-secondary;
+  .primary-back & {
+    background: $col-sky;
+  }
+}

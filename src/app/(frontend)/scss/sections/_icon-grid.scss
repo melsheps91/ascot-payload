@@ -1,0 +1,235 @@
+@use '../vars' as *;
+@use '../mixins' as *;
+
+///////////////////////////////////////////////
+//////  ICON GRID
+//////////////////////////////////////////////
+
+.icon-grid {
+  .item {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .item-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+  }
+
+  .item-number {
+    font-weight: 500;
+  }
+
+  .item-arrow {
+    transform: rotate(-45deg);
+  }
+
+  .item-icon {
+    font-size: 22px;
+    color: $col-secondary;
+  }
+
+  .item-logo {
+    position: relative;
+    height: 96px;
+    padding: 16px 24px;
+    border-radius: $radius-small;
+    background: $col-white;
+    // Keep the logo inside the padding.
+    img {
+      inset: 16px 24px !important;
+      width: calc(100% - 48px) !important;
+      height: calc(100% - 32px) !important;
+    }
+  }
+
+  .item-text {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    h3 {
+      font-size: 20px;
+      font-weight: 400;
+      letter-spacing: -0.01em;
+      line-height: 1.3;
+    }
+    p {
+      font-size: 15px;
+      line-height: 1.6;
+      color: $col-text;
+    }
+  }
+
+  .btn.text {
+    align-self: flex-start;
+    margin-top: auto;
+    padding-top: 8px;
+  }
+
+  // Grid of cells separated by hairlines (brands, perks, environment, vendors).
+  &.bordered {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+    gap: 1px;
+    background: $col-border;
+    border: 1px solid $col-border;
+    border-radius: $radius;
+    overflow: hidden;
+    .item {
+      padding: clamp(28px, 3vw, 40px) clamp(24px, 2.6vw, 32px);
+      background: $col-white;
+      transition: background 0.3s ease;
+    }
+    a.item:hover {
+      background: $col-lighter-grey;
+    }
+    // Numbered, linked cells (brands) are taller, with the text at the bottom.
+    .item:has(.item-number) {
+      min-height: 340px;
+      gap: 40px;
+      .item-text {
+        margin-top: auto;
+      }
+      .item-text h3 {
+        font-size: 24px;
+      }
+    }
+  }
+
+  // Grey rounded cards (criteria, explore, beyond).
+  &.cards {
+    @include auto-grid(300px, 20px);
+    .item {
+      gap: 20px;
+      min-height: 240px;
+      padding: clamp(32px, 3vw, 40px);
+      border-radius: $radius;
+      background: $col-light-grey;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+    .item-top {
+      color: $col-secondary;
+    }
+    .item:has(.item-top) .item-text {
+      margin-top: auto;
+    }
+    .item-text h3 {
+      font-size: 24px;
+    }
+    .item-icon {
+      font-size: 26px;
+    }
+    a.item {
+      min-height: 300px;
+      justify-content: space-between;
+      .item-text h3 {
+        font-size: 32px;
+        font-weight: 300;
+        letter-spacing: -0.02em;
+      }
+      &:hover {
+        background: $col-primary;
+        color: $col-white;
+        .item-top,
+        p {
+          color: inherit;
+        }
+      }
+    }
+    // Wide cards with a long paragraph and a link (Andrew Scott "Beyond").
+    &:has(.btn.text) {
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+      .item {
+        padding: clamp(32px, 4vw, 56px);
+      }
+      .item-text h3 {
+        font-size: 30px;
+        font-weight: 300;
+        letter-spacing: -0.02em;
+      }
+      .item-text p {
+        font-size: 16px;
+        line-height: 1.75;
+      }
+    }
+  }
+
+  // One row divided by vertical rules (accolades).
+  &.row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+    .item {
+      gap: 14px;
+      padding: 48px 32px 48px 0;
+      border-right: 1px solid $col-border;
+      @include max-width(560px) {
+        border-right: 0;
+        border-bottom: 1px solid $col-border;
+      }
+    }
+    .item + .item {
+      padding-left: 32px;
+      @include max-width(560px) {
+        padding-left: 0;
+      }
+    }
+    .item:last-child {
+      border-right: 0;
+    }
+    .item-text p {
+      font-size: 14px;
+    }
+  }
+
+  // Headings only, as pills (charities).
+  &.pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    .pill {
+      padding: 18px 28px;
+      font-size: clamp(16px, 1.4vw, 20px);
+      transition: all 0.25s ease;
+      &:hover {
+        background: $col-black;
+        border-color: $col-black;
+        color: $col-white;
+      }
+    }
+  }
+}
+
+// Icon grids on navy.
+.primary-back .icon-grid {
+  .item-icon,
+  .item-top {
+    color: $col-sky;
+  }
+  .item-text p {
+    color: rgba($col-white, 0.8);
+  }
+  &.bordered {
+    background: rgba($col-white, 0.16);
+    border-color: rgba($col-white, 0.16);
+    .item {
+      background: $col-primary;
+    }
+    a.item:hover {
+      background: $col-primary-hover;
+    }
+  }
+}
+
+// The accolades row sits on the navy banner's bottom edge, and the next section keeps
+// its full padding.
+.banner + .icon-grid-wrap:has(.icon-grid.row) {
+  padding: 0;
+  border-bottom: 1px solid $col-border;
+  + .large-pad {
+    padding-top: $section-pad;
+  }
+}

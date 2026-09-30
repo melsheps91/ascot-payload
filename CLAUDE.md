@@ -1,4 +1,74 @@
-# Claude Code
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 This project uses the Payload CMS skill at `.claude/skills/payload/`.
 Start with `.claude/skills/payload/SKILL.md` for a quick reference, then see `.claude/skills/payload/reference/` for detailed docs.
+
+## Commands
+
+The repo uses npm (`package-lock.json`), although some scripts and `playwright.config.ts` call `pnpm`.
+
+- `npm run dev`: dev server on http://localhost:3000 (admin at `/admin`). `npm run devsafe` clears `.next` first.
+- `npm run build` / `npm run start`: production build and serve.
+- `npm run lint`: ESLint.
+- `npm run generate:types`: regenerate `src/payload-types.ts` after any collection, field or block change.
+- `npm run generate:importmap`: regenerate `src/app/(payload)/admin/importMap.js` after adding custom admin components.
+- `npm run test:int`: Vitest integration tests (`tests/int/**/*.int.spec.ts`, jsdom). Single file: `npx vitest run --config ./vitest.config.mts tests/int/api.int.spec.ts`; single test: add `-t "<name>"`.
+- `npm run test:e2e`: Playwright tests (`tests/e2e`); starts or reuses the dev server. Single test: `npx playwright test --config=playwright.config.ts tests/e2e/frontend.e2e.spec.ts`.
+- `npx tsc --noEmit`: type-check.
+- `npm run seed`: fills the site with the Ascot redesign content (pages, news, jobs, testimonials, forms, globals, images from `scripts/seed/assets/`). Re-runnable: seeded records are matched by slug/title and overwritten; other content is left alone.
+- `npm run db:push [-- --dry]`: pushes the schema without the drizzle-kit bug described under "Database". Stop `npm run dev` first.
+- `npm run acf:import -- <json files or folders> [--dry-run] [--force] [--as block|global]`: convert ACF field groups into Payload config (see below). Unit tests: `npx vitest run --config ./vitest.config.mts tests/unit`.
+- `npm run lint` currently crashes while loading `@eslint/eslintrc` ("Converting circular structure to JSON"). This problem predates the ACF tooling.
+
+## Porting CleanBuildPro
+
+This site replicates the CleanBuildPro WordPress theme in `../CleanBuildPro`, which has its own `CLAUDE.md`. Use the `/acf-to-payload` skill (`.claude/skills/acf-to-payload/`) for this work.
+
+- The importer also runs in the browser at `/admin/acf-import` ("ACF importer" under Tools in the sidebar) while `npm run dev` is up. The view is `src/components/admin/AcfImport*`, backed by the dev-only, login-required endpoints in `src/endpoints/acfImport.ts` (`/api/acf-import`, `/preview`, `/run`). They return 404 in production because they write source files.
+- `scripts/acf-to-payload/convert.ts` is a pure ACF-group-to-source converter. `importer.ts` does the file work shared by the CLI (`index.ts`) and the endpoints: it writes the files, then edits `Pages.ts`, `payload.config.ts` and the block switch in `components/render-blocks.tsx` with regexes. Payload reloads the config after an import through Next's HMR socket, which only fires while a browser has the site open. If a test dev server runs on a port other than 3000, also set `PORT` to that port, or Payload listens to the wrong socket. Options-page groups become globals in `src/globals/`, and every other group becomes a block.
+- Mapping choices: names are camelCased and the group's shared prefix is stripped. An ACF `link` becomes the `link()` group from `src/fields/link.ts` (`label`, `url`, `newTab`, plus `style` and a Font Awesome `icon`). A `true_false` with on/off labels becomes a radio. ACF tabs become a `tabs` field, and `conditional_logic` becomes `admin.condition`, using `blockData` for block-level fields read from inside repeaters.
+- `src/app/(frontend)/components/shared/` has the React equivalents of the theme helpers: `Button`/`Buttons` (`button_field`/`button_repeater`), `Autop` (textarea `wpautop`), `Img` (upload field with an empty-slot placeholder), `RichText`, `Heading`/`Emphasis`, and `Section`/`SectionIntro` (the `{name}-wrap large-pad` wrapper and the shared intro fields from `src/fields/section.ts`).
+
+## Architecture
+
+Payload 3 runs inside a Next.js App Router app. There is no separate backend.
+
+- `src/payload.config.ts` is the single source of truth: collections, the Lexical rich-text editor, the SQLite adapter (`@payloadcms/db-sqlite`) and sharp.
+- `src/app/(payload)/` is Payload's generated admin UI and REST/GraphQL routes. Leave it alone except for `custom.scss`.
+- `src/app/(frontend)/` is the public site. Server components query data with the Local API (`getPayload({ config })` then `payload.find(...)`) instead of HTTP.
+- Content model:
+  - `pages` (`src/collections/Pages.ts`): `title`, `slug`, `meta` and a `layout` blocks field. Block configs live in `src/blocks/`, most based on a CleanBuildPro ACF group (the header comment says which). Each block has a React component in `src/app/(frontend)/components/`, and `components/render-blocks.tsx` renders the right one in a `switch` on `block.blockType`. Blocks share `sectionSettings` (background `theme` and `anchor`) and `sectionIntro` from `src/fields/section.ts`.
+  - `posts` (news) with `categories`, `jobs` (careers), `testimonials`, and `cvs` (private uploads, readable only when logged in).
+  - `forms` and `form-submissions` come from `@payloadcms/plugin-form-builder` (radio and upload fields enabled). Submissions get a `job` relationship for applications. `components/form/` renders any form and posts multipart to `/api/form-submissions`; the plugin stores uploads in `cvs`. There is no email adapter, so form emails are only logged.
+  - Globals (`src/globals/`): `header` (logo, menu, button), `footer`, `companyDetails` (from the ACF "Company Details" group: address, phone, socials, company number) and `jobSettings` (application form, "why join" panel, speculative application page).
+- Routing: `/` renders the page with slug `home`; `[slug]/page.tsx` renders other pages (`/home` redirects to `/`). `news/[slug]` is the article template, `careers/[slug]` the job template and `careers/apply` the speculative application page. Paths used by templates are in `src/lib/routes.ts`. Local API helpers (`getPageBySlug`, `getGlobals`, …) are in `src/lib/payload.ts`. Every collection and global has an `afterChange` hook (`src/hooks/revalidate.ts`) that revalidates the whole site. `src/app/my-route/route.ts` is a leftover example route from the template.
+- Headings: wrap words in `*asterisks*` in any heading field to make them bold (`Emphasis` renders them as `<strong>`), which gives the redesign's light/bold mix.
+- Upload fields (e.g. `image`) come back as `number | Media` depending on query depth. Check `typeof x === 'object'` before using them. Render rich text with `RichText` from `@payloadcms/richtext-lexical/react`.
+- Frontend styles are Sass (`src/app/(frontend)/scss/`, entry `main.scss`), using the CleanBuildPro partials with `@use`: `_vars` (re-skinned to the redesign's navy palette), `_mixins` (the theme's `max-width()` etc. plus `display()`, `eyebrow()`, `auto-grid()`, `rise()`), `_reset`, `_helpers` (containers, `.large-pad`, `.grey-back`/`.primary-back`, same-background padding collapse), `_text-defaults`, `_buttons` and `_forms`. Section styles are one partial per block in `scss/sections/`. Montserrat (200–600) loads through `next/font` as `--font-primary`. Icons use the CleanBuildPro Font Awesome 7 Pro kit (`4ff287f21b`, CSS mode), loaded `beforeInteractive` in `layout.tsx`; loading it later leaves solid icons blank. The kit must allow the site's domain.
+
+## Admin (Purplex branding)
+
+- `payload.config.ts` `admin.meta` and `admin.components` set the title suffix, favicon, `graphics.Logo`/`Icon`, the login intro, the dashboard panel and the "View website" nav link. The components are in `src/components/admin/` (`branding/`, `Dashboard.tsx`, `BlockLabel.tsx`); their styles are in `src/app/(payload)/custom.scss` (`--plx-accent` is the accent colour). Logo files and block thumbnails live in `public/admin/`.
+- Every page block has `imageURL` (a screenshot in `public/admin/blocks/`) and `admin.group` for the Add Section picker. `Pages.ts` wraps each block with `withSummaryLabel`, which shows the block's heading in its header. When adding a block, give it both and add a thumbnail (screenshot the section at 1440px wide, 640×400 JPEG).
+- Collections and globals are grouped in the nav (Website, News, Careers, Settings, Forms) and pages, articles and jobs have `admin.preview`, which adds a preview button.
+- Run `npm run generate:importmap` after adding admin components (the dev server usually does it for you).
+
+## Database (SQLite) caveats
+
+- `DATABASE_URL=file:./ascot-payload.db` (see `.env.example`). `docker-compose.yml` is left over from the template and describes MongoDB; ignore it.
+- The tests use the same database as dev; there is no separate test database. Integration tests load `.env` through `vitest.setup.ts`, and the e2e `seedTestUser` helper deletes and recreates `dev@payloadcms.com` in `ascot-payload.db`.
+- In dev, Payload pushes schema changes to the database automatically. **Removing or renaming a field or block drops its columns or tables and deletes the data straight away.** Back up `ascot-payload.db` before restructuring.
+- When a change is ambiguous (e.g. moving fields into a group), drizzle asks "create or rename column?" in the dev-server terminal and every request hangs until it's answered. So run `npm run dev` in a terminal someone can interact with, not as a detached background process.
+- drizzle-kit bug: when it has to rebuild a table (e.g. adding a collection adds a foreign key to `payload_locked_documents_rels`, or a relationship adds one to a `*_rels` table), it emits every `CREATE INDEX` twice and the push fails with "index … already exists", after which requests hang. Stop the dev server and run `npm run db:push` (`scripts/push-schema.ts`), which de-duplicates the statements and applies them in a transaction. It refuses anything drizzle flags as data loss. Making an existing required column optional hits the same rebuild path, so avoid it or migrate by hand.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

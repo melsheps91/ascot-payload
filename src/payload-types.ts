@@ -67,8 +67,16 @@ export interface Config {
   };
   blocks: {};
   collections: {
-    users: User;
+    pages: Page;
     media: Media;
+    testimonials: Testimonial;
+    posts: Post;
+    categories: Category;
+    jobs: Job;
+    cvs: Cv;
+    users: User;
+    forms: Form;
+    'form-submissions': FormSubmission;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -76,19 +84,37 @@ export interface Config {
   };
   collectionsJoins: {};
   collectionsSelect: {
-    users: UsersSelect<false> | UsersSelect<true>;
+    pages: PagesSelect<false> | PagesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    testimonials: TestimonialsSelect<false> | TestimonialsSelect<true>;
+    posts: PostsSelect<false> | PostsSelect<true>;
+    categories: CategoriesSelect<false> | CategoriesSelect<true>;
+    jobs: JobsSelect<false> | JobsSelect<true>;
+    cvs: CvsSelect<false> | CvsSelect<true>;
+    users: UsersSelect<false> | UsersSelect<true>;
+    forms: FormsSelect<false> | FormsSelect<true>;
+    'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
   db: {
-    defaultIDType: string;
+    defaultIDType: number;
   };
   fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    header: Header;
+    footer: Footer;
+    companyDetails: CompanyDetail;
+    jobSettings: JobSetting;
+  };
+  globalsSelect: {
+    header: HeaderSelect<false> | HeaderSelect<true>;
+    footer: FooterSelect<false> | FooterSelect<true>;
+    companyDetails: CompanyDetailsSelect<false> | CompanyDetailsSelect<true>;
+    jobSettings: JobSettingsSelect<false> | JobSettingsSelect<true>;
+  };
   locale: null;
   widgets: {
     collections: CollectionsWidget;
@@ -118,36 +144,142 @@ export interface UserAuthOperations {
   };
 }
 /**
+ * Every page on the site. Each is built from blocks; the page with the slug "home" is the homepage.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users".
+ * via the `definition` "pages".
  */
-export interface User {
-  id: string;
+export interface Page {
+  id: number;
+  title: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  meta?: {
+    /**
+     * Defaults to the title.
+     */
+    title?: string | null;
+    description?: string | null;
+  };
+  /**
+   * The page is built from these sections, top to bottom. Drag to reorder.
+   */
+  layout?:
+    | (
+        | BannerBlock
+        | TickerBlock
+        | IntroContentBlock
+        | ProductCardsManualBlock
+        | IconGridBlock
+        | RepeaterContentBlock
+        | TimelineBlock
+        | LogoGridBlock
+        | GalleryBlock
+        | TestimonialsBlock
+        | JobsListBlock
+        | PostsLoopBlock
+        | LatestNewsBlock
+        | FormSectionBlock
+        | NumberedSectionsBlock
+      )[]
+    | null;
   updatedAt: string;
   createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  sessions?:
-    | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
-      }[]
-    | null;
-  password?: string | null;
-  collection: 'users';
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "BannerBlock".
+ */
+export interface BannerBlock {
+  variant: 'home' | 'large' | 'split' | 'default';
+  preHeading?: string | null;
+  /**
+   * Leave empty to use the page title. Wrap words in *asterisks* to make them bold.
+   */
+  heading?: string | null;
+  /**
+   * On the Default style, buttons show as pill tabs and the one linking to the current page is highlighted.
+   */
+  buttons?:
+    | {
+        button?: {
+          label?: string | null;
+          url?: string | null;
+          style?: ('auto' | 'primary' | 'secondary' | 'text' | 'icon') | null;
+          /**
+           * Optional Font Awesome classes, e.g. "fa-brands fa-linkedin-in".
+           */
+          icon?: string | null;
+          newTab?: boolean | null;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  stats?:
+    | {
+        value: string;
+        label: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * The round arrow link beside the stats, e.g. "Discover the Group" to #about.
+   */
+  scrollLink?: {
+    label?: string | null;
+    url?: string | null;
+    style?: ('auto' | 'primary' | 'secondary' | 'text' | 'icon') | null;
+    /**
+     * Optional Font Awesome classes, e.g. "fa-brands fa-linkedin-in".
+     */
+    icon?: string | null;
+    newTab?: boolean | null;
+  };
+  type?: ('image' | 'video') | null;
+  text?: string | null;
+  /**
+   * Add more than one image to show a fading slideshow.
+   */
+  images?: (number | Media)[] | null;
+  /**
+   * Which part of the image stays in view when the header crops it. The focal point is set by clicking on the image in Images & files.
+   */
+  imagePosition?: ('focal' | 'top' | 'center' | 'bottom' | 'left' | 'right') | null;
+  videoType?: ('youtube' | 'local') | null;
+  /**
+   * YouTube URL. Plays muted in the background and adds a "Play Video" button.
+   */
+  youtube?: string | null;
+  /**
+   * Short muted loop for the background (mp4 or mov).
+   */
+  video?: (number | null) | Media;
+  /**
+   * Optional full-length video, opened by a "Play Video" button.
+   */
+  fullVideo?: (number | null) | Media;
+  /**
+   * Poster image shown while the video loads.
+   */
+  videoFallback?: (number | null) | Media;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'banner';
+}
+/**
+ * Photos, logos and videos used around the site.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
  */
 export interface Media {
-  id: string;
+  id: number;
+  /**
+   * Say what the image shows, e.g. "The team at the Spring BBQ". Read out by screen readers and used by search engines.
+   */
   alt: string;
   updatedAt: string;
   createdAt: string;
@@ -163,10 +295,984 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TickerBlock".
+ */
+export interface TickerBlock {
+  items?:
+    | {
+        label: string;
+        id?: string | null;
+      }[]
+    | null;
+  duration?: number | null;
+  theme: 'light' | 'grey' | 'dark';
+  /**
+   * Lets buttons link to this section, e.g. "about" for #about.
+   */
+  anchor?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'ticker';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "IntroContentBlock".
+ */
+export interface IntroContentBlock {
+  layout: 'split' | 'centred';
+  /**
+   * Wrap words in *asterisks* to make them bold.
+   */
+  heading?: string | null;
+  eyebrow?: string | null;
+  /**
+   * Optional large figure shown instead of the heading, e.g. "£500k+".
+   */
+  stat?: {
+    value?: string | null;
+    caption?: string | null;
+  };
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  buttons?:
+    | {
+        button?: {
+          label?: string | null;
+          url?: string | null;
+          style?: ('auto' | 'primary' | 'secondary' | 'text' | 'icon') | null;
+          /**
+           * Optional Font Awesome classes, e.g. "fa-brands fa-linkedin-in".
+           */
+          icon?: string | null;
+          newTab?: boolean | null;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  headingLinks?:
+    | {
+        button?: {
+          label?: string | null;
+          url?: string | null;
+          style?: ('auto' | 'primary' | 'secondary' | 'text' | 'icon') | null;
+          /**
+           * Optional Font Awesome classes, e.g. "fa-brands fa-linkedin-in".
+           */
+          icon?: string | null;
+          newTab?: boolean | null;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  image?: (number | null) | Media;
+  theme: 'light' | 'grey' | 'dark';
+  /**
+   * Lets buttons link to this section, e.g. "about" for #about.
+   */
+  anchor?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'introContent';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductCardsManualBlock".
+ */
+export interface ProductCardsManualBlock {
+  introEyebrow?: string | null;
+  /**
+   * Wrap words in *asterisks* to make them bold.
+   */
+  introHeading?: string | null;
+  introText?: string | null;
+  introButton?: {
+    label?: string | null;
+    url?: string | null;
+    style?: ('auto' | 'primary' | 'secondary' | 'text' | 'icon') | null;
+    /**
+     * Optional Font Awesome classes, e.g. "fa-brands fa-linkedin-in".
+     */
+    icon?: string | null;
+    newTab?: boolean | null;
+  };
+  cards?:
+    | {
+        tag?: string | null;
+        heading: string;
+        text?: string | null;
+        image?: (number | null) | Media;
+        link: {
+          label: string;
+          url: string;
+          style?: ('auto' | 'primary' | 'secondary' | 'text' | 'icon') | null;
+          /**
+           * Optional Font Awesome classes, e.g. "fa-brands fa-linkedin-in".
+           */
+          icon?: string | null;
+          newTab?: boolean | null;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  theme: 'light' | 'grey' | 'dark';
+  /**
+   * Lets buttons link to this section, e.g. "about" for #about.
+   */
+  anchor?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'productCardsManual';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "IconGridBlock".
+ */
+export interface IconGridBlock {
+  introEyebrow?: string | null;
+  /**
+   * Wrap words in *asterisks* to make them bold.
+   */
+  introHeading?: string | null;
+  introText?: string | null;
+  introButton?: {
+    label?: string | null;
+    url?: string | null;
+    style?: ('auto' | 'primary' | 'secondary' | 'text' | 'icon') | null;
+    /**
+     * Optional Font Awesome classes, e.g. "fa-brands fa-linkedin-in".
+     */
+    icon?: string | null;
+    newTab?: boolean | null;
+  };
+  style: 'bordered' | 'cards' | 'row' | 'pills';
+  /**
+   * Show 01, 02, 03… at the top of each item.
+   */
+  numbered?: boolean | null;
+  grid?:
+    | {
+        /**
+         * Font Awesome classes, e.g. "fa-solid fa-award".
+         */
+        icon?: string | null;
+        /**
+         * Optional logo, shown in a white panel.
+         */
+        image?: (number | null) | Media;
+        heading: string;
+        text?: string | null;
+        /**
+         * Leave the label empty to make the whole item clickable, or add one to show a text link.
+         */
+        link?: {
+          label?: string | null;
+          url?: string | null;
+          style?: ('auto' | 'primary' | 'secondary' | 'text' | 'icon') | null;
+          /**
+           * Optional Font Awesome classes, e.g. "fa-brands fa-linkedin-in".
+           */
+          icon?: string | null;
+          newTab?: boolean | null;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  theme: 'light' | 'grey' | 'dark';
+  /**
+   * Lets buttons link to this section, e.g. "about" for #about.
+   */
+  anchor?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'iconGrid';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RepeaterContentBlock".
+ */
+export interface RepeaterContentBlock {
+  /**
+   * Rows alternate sides from here.
+   */
+  firstImageSide?: ('left' | 'right') | null;
+  rows?:
+    | {
+        eyebrow?: string | null;
+        /**
+         * Optional logo shown beside the eyebrow.
+         */
+        logo?: (number | null) | Media;
+        /**
+         * Wrap words in *asterisks* to make them bold.
+         */
+        heading?: string | null;
+        content?: {
+          root: {
+            type: string;
+            children: {
+              type: any;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        } | null;
+        /**
+         * Shown as pills under the content.
+         */
+        tags?:
+          | {
+              label: string;
+              id?: string | null;
+            }[]
+          | null;
+        buttons?:
+          | {
+              button?: {
+                label?: string | null;
+                url?: string | null;
+                style?: ('auto' | 'primary' | 'secondary' | 'text' | 'icon') | null;
+                /**
+                 * Optional Font Awesome classes, e.g. "fa-brands fa-linkedin-in".
+                 */
+                icon?: string | null;
+                newTab?: boolean | null;
+              };
+              id?: string | null;
+            }[]
+          | null;
+        mediaType?: ('image' | 'video') | null;
+        imageFit?: ('cover' | 'fit') | null;
+        /**
+         * Add more than one image to show a slider.
+         */
+        images?: (number | Media)[] | null;
+        videoType?: ('youtube' | 'local') | null;
+        youtubeLink?: string | null;
+        video?: (number | null) | Media;
+        videoPoster?: (number | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  theme: 'light' | 'grey' | 'dark';
+  /**
+   * Lets buttons link to this section, e.g. "about" for #about.
+   */
+  anchor?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'repeaterContent';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TimelineBlock".
+ */
+export interface TimelineBlock {
+  eyebrow?: string | null;
+  /**
+   * Wrap words in *asterisks* to make them bold.
+   */
+  heading?: string | null;
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  items?:
+    | {
+        year: string;
+        title: string;
+        text?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  theme: 'light' | 'grey' | 'dark';
+  /**
+   * Lets buttons link to this section, e.g. "about" for #about.
+   */
+  anchor?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'timeline';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LogoGridBlock".
+ */
+export interface LogoGridBlock {
+  introEyebrow?: string | null;
+  /**
+   * Wrap words in *asterisks* to make them bold.
+   */
+  introHeading?: string | null;
+  introText?: string | null;
+  introButton?: {
+    label?: string | null;
+    url?: string | null;
+    style?: ('auto' | 'primary' | 'secondary' | 'text' | 'icon') | null;
+    /**
+     * Optional Font Awesome classes, e.g. "fa-brands fa-linkedin-in".
+     */
+    icon?: string | null;
+    newTab?: boolean | null;
+  };
+  logos?:
+    | {
+        name: string;
+        url?: string | null;
+        logo?: (number | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  theme: 'light' | 'grey' | 'dark';
+  /**
+   * Lets buttons link to this section, e.g. "about" for #about.
+   */
+  anchor?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'logoGrid';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "GalleryBlock".
+ */
+export interface GalleryBlock {
+  introEyebrow?: string | null;
+  /**
+   * Wrap words in *asterisks* to make them bold.
+   */
+  introHeading?: string | null;
+  introText?: string | null;
+  introButton?: {
+    label?: string | null;
+    url?: string | null;
+    style?: ('auto' | 'primary' | 'secondary' | 'text' | 'icon') | null;
+    /**
+     * Optional Font Awesome classes, e.g. "fa-brands fa-linkedin-in".
+     */
+    icon?: string | null;
+    newTab?: boolean | null;
+  };
+  /**
+   * One image shows full width. Two or more show as a grid.
+   */
+  gallery?: (number | Media)[] | null;
+  theme: 'light' | 'grey' | 'dark';
+  /**
+   * Lets buttons link to this section, e.g. "about" for #about.
+   */
+  anchor?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'gallery';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TestimonialsBlock".
+ */
+export interface TestimonialsBlock {
+  introEyebrow?: string | null;
+  /**
+   * Wrap words in *asterisks* to make them bold.
+   */
+  introHeading?: string | null;
+  introText?: string | null;
+  introButton?: {
+    label?: string | null;
+    url?: string | null;
+    style?: ('auto' | 'primary' | 'secondary' | 'text' | 'icon') | null;
+    /**
+     * Optional Font Awesome classes, e.g. "fa-brands fa-linkedin-in".
+     */
+    icon?: string | null;
+    newTab?: boolean | null;
+  };
+  style: 'quote' | 'grid' | 'slider';
+  /**
+   * Leave empty to show the six most recent.
+   */
+  testimonials?: (number | Testimonial)[] | null;
+  theme: 'light' | 'grey' | 'dark';
+  /**
+   * Lets buttons link to this section, e.g. "about" for #about.
+   */
+  anchor?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'testimonials';
+}
+/**
+ * Quotes shown by the Testimonials block.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "testimonials".
+ */
+export interface Testimonial {
+  id: number;
+  customerName: string;
+  companyName?: string | null;
+  quote: string;
+  /**
+   * Optional square photo.
+   */
+  image?: (number | null) | Media;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "JobsListBlock".
+ */
+export interface JobsListBlock {
+  introEyebrow?: string | null;
+  /**
+   * Wrap words in *asterisks* to make them bold.
+   */
+  introHeading?: string | null;
+  introText?: string | null;
+  introButton?: {
+    label?: string | null;
+    url?: string | null;
+    style?: ('auto' | 'primary' | 'secondary' | 'text' | 'icon') | null;
+    /**
+     * Optional Font Awesome classes, e.g. "fa-brands fa-linkedin-in".
+     */
+    icon?: string | null;
+    newTab?: boolean | null;
+  };
+  emptyText?: string | null;
+  cta?: {
+    heading?: string | null;
+    text?: string | null;
+    button?: {
+      label?: string | null;
+      url?: string | null;
+      style?: ('auto' | 'primary' | 'secondary' | 'text' | 'icon') | null;
+      /**
+       * Optional Font Awesome classes, e.g. "fa-brands fa-linkedin-in".
+       */
+      icon?: string | null;
+      newTab?: boolean | null;
+    };
+  };
+  theme: 'light' | 'grey' | 'dark';
+  /**
+   * Lets buttons link to this section, e.g. "about" for #about.
+   */
+  anchor?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'jobsList';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PostsLoopBlock".
+ */
+export interface PostsLoopBlock {
+  perPage?: number | null;
+  showFilters?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'postsLoop';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LatestNewsBlock".
+ */
+export interface LatestNewsBlock {
+  introEyebrow?: string | null;
+  /**
+   * Wrap words in *asterisks* to make them bold.
+   */
+  introHeading?: string | null;
+  introText?: string | null;
+  introButton?: {
+    label?: string | null;
+    url?: string | null;
+    style?: ('auto' | 'primary' | 'secondary' | 'text' | 'icon') | null;
+    /**
+     * Optional Font Awesome classes, e.g. "fa-brands fa-linkedin-in".
+     */
+    icon?: string | null;
+    newTab?: boolean | null;
+  };
+  limit?: number | null;
+  theme: 'light' | 'grey' | 'dark';
+  /**
+   * Lets buttons link to this section, e.g. "about" for #about.
+   */
+  anchor?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'latestNews';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FormSectionBlock".
+ */
+export interface FormSectionBlock {
+  eyebrow?: string | null;
+  /**
+   * Shown as the page's main heading. Wrap words in *asterisks* to make them bold.
+   */
+  heading?: string | null;
+  /**
+   * Phone, address and social links from Company Details.
+   */
+  showContactDetails?: boolean | null;
+  formHeading?: string | null;
+  form: number | Form;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'formSection';
+}
+/**
+ * The contact and job application forms. Add, remove or reorder fields here.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "forms".
+ */
+export interface Form {
+  id: number;
+  title: string;
+  fields?:
+    | (
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            required?: boolean | null;
+            defaultValue?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'checkbox';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            required?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'email';
+          }
+        | {
+            message?: {
+              root: {
+                type: string;
+                children: {
+                  type: any;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            } | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'message';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            defaultValue?: number | null;
+            required?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'number';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            defaultValue?: string | null;
+            placeholder?: string | null;
+            options?:
+              | {
+                  label: string;
+                  value: string;
+                  id?: string | null;
+                }[]
+              | null;
+            required?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'select';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            defaultValue?: string | null;
+            required?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'text';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            defaultValue?: string | null;
+            required?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'textarea';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            uploadCollection: 'cvs';
+            mimeTypes?:
+              | {
+                  mimeType: string;
+                  id?: string | null;
+                }[]
+              | null;
+            width?: number | null;
+            maxFileSize?: number | null;
+            required?: boolean | null;
+            multiple?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'upload';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            defaultValue?: string | null;
+            options?:
+              | {
+                  label: string;
+                  value: string;
+                  id?: string | null;
+                }[]
+              | null;
+            required?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'radio';
+          }
+      )[]
+    | null;
+  submitButtonLabel?: string | null;
+  confirmationType?: ('message' | 'redirect') | null;
+  confirmationMessage?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  redirect?: {
+    type?: ('reference' | 'custom') | null;
+    reference?: {
+      relationTo: 'pages';
+      value: number | Page;
+    } | null;
+    url?: string | null;
+  };
+  emails?:
+    | {
+        emailTo?: string | null;
+        cc?: string | null;
+        bcc?: string | null;
+        replyTo?: string | null;
+        emailFrom?: string | null;
+        subject: string;
+        message?: {
+          root: {
+            type: string;
+            children: {
+              type: any;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        } | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NumberedSectionsBlock".
+ */
+export interface NumberedSectionsBlock {
+  contentsHeading?: string | null;
+  sections?:
+    | {
+        heading: string;
+        /**
+         * Leave empty to show a "wording to be supplied" placeholder.
+         */
+        content?: {
+          root: {
+            type: string;
+            children: {
+              type: any;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        } | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'numberedSections';
+}
+/**
+ * News articles, newest first on /news.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts".
+ */
+export interface Post {
+  id: number;
+  title: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  publishedDate: string;
+  category?: (number | null) | Category;
+  meta?: {
+    /**
+     * Defaults to the title.
+     */
+    title?: string | null;
+    description?: string | null;
+  };
+  heroImage?: (number | null) | Media;
+  /**
+   * Shown on news cards and as the article intro.
+   */
+  excerpt: string;
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * The filter buttons on /news.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories".
+ */
+export interface Category {
+  id: number;
+  title: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  /**
+   * Order of the news filter buttons.
+   */
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Vacancies on /careers. Set a job to Closed to take it down without deleting it.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "jobs".
+ */
+export interface Job {
+  id: number;
+  title: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  /**
+   * Closed jobs are hidden from the site.
+   */
+  status: 'open' | 'closed';
+  meta?: {
+    /**
+     * Defaults to the title.
+     */
+    title?: string | null;
+    description?: string | null;
+  };
+  company: string;
+  location: string;
+  type?: string | null;
+  hours?: string | null;
+  summary: string;
+  duties?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  requirements?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Uploaded with job applications. Open an application under Form Submissions.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cvs".
+ */
+export interface Cv {
+  id: number;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * People who can log in to this admin.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users".
+ */
+export interface User {
+  id: number;
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  resetPasswordRequestedAt?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
+  password?: string | null;
+  collection: 'users';
+}
+/**
+ * Everything sent through the website forms. Job applications are linked to their job and CV.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "form-submissions".
+ */
+export interface FormSubmission {
+  id: number;
+  form: number | Form;
+  submissionData?:
+    | {
+        field: string;
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  submissionUploads?:
+    | {
+        field: string;
+        value: {
+          relationTo: 'cvs';
+          value: number | Cv;
+        }[];
+        id?: string | null;
+      }[]
+    | null;
+  job?: (number | null) | Job;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
-  id: string;
+  id: number;
   key: string;
   data:
     | {
@@ -183,20 +1289,52 @@ export interface PayloadKv {
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
-  id: string;
+  id: number;
   document?:
     | ({
-        relationTo: 'users';
-        value: string | User;
+        relationTo: 'pages';
+        value: number | Page;
       } | null)
     | ({
         relationTo: 'media';
-        value: string | Media;
+        value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'testimonials';
+        value: number | Testimonial;
+      } | null)
+    | ({
+        relationTo: 'posts';
+        value: number | Post;
+      } | null)
+    | ({
+        relationTo: 'categories';
+        value: number | Category;
+      } | null)
+    | ({
+        relationTo: 'jobs';
+        value: number | Job;
+      } | null)
+    | ({
+        relationTo: 'cvs';
+        value: number | Cv;
+      } | null)
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'forms';
+        value: number | Form;
+      } | null)
+    | ({
+        relationTo: 'form-submissions';
+        value: number | FormSubmission;
       } | null);
   globalSlug?: string | null;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   updatedAt: string;
   createdAt: string;
@@ -206,10 +1344,10 @@ export interface PayloadLockedDocument {
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-  id: string;
+  id: number;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   key?: string | null;
   value?:
@@ -229,7 +1367,7 @@ export interface PayloadPreference {
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-  id: string;
+  id: number;
   name?: string | null;
   batch?: number | null;
   updatedAt: string;
@@ -237,25 +1375,482 @@ export interface PayloadMigration {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users_select".
+ * via the `definition` "pages_select".
  */
-export interface UsersSelect<T extends boolean = true> {
-  updatedAt?: T;
-  createdAt?: T;
-  email?: T;
-  resetPasswordToken?: T;
-  resetPasswordExpiration?: T;
-  salt?: T;
-  hash?: T;
-  loginAttempts?: T;
-  lockUntil?: T;
-  sessions?:
+export interface PagesSelect<T extends boolean = true> {
+  title?: T;
+  generateSlug?: T;
+  slug?: T;
+  meta?:
     | T
     | {
-        id?: T;
-        createdAt?: T;
-        expiresAt?: T;
+        title?: T;
+        description?: T;
       };
+  layout?:
+    | T
+    | {
+        banner?: T | BannerBlockSelect<T>;
+        ticker?: T | TickerBlockSelect<T>;
+        introContent?: T | IntroContentBlockSelect<T>;
+        productCardsManual?: T | ProductCardsManualBlockSelect<T>;
+        iconGrid?: T | IconGridBlockSelect<T>;
+        repeaterContent?: T | RepeaterContentBlockSelect<T>;
+        timeline?: T | TimelineBlockSelect<T>;
+        logoGrid?: T | LogoGridBlockSelect<T>;
+        gallery?: T | GalleryBlockSelect<T>;
+        testimonials?: T | TestimonialsBlockSelect<T>;
+        jobsList?: T | JobsListBlockSelect<T>;
+        postsLoop?: T | PostsLoopBlockSelect<T>;
+        latestNews?: T | LatestNewsBlockSelect<T>;
+        formSection?: T | FormSectionBlockSelect<T>;
+        numberedSections?: T | NumberedSectionsBlockSelect<T>;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "BannerBlock_select".
+ */
+export interface BannerBlockSelect<T extends boolean = true> {
+  variant?: T;
+  preHeading?: T;
+  heading?: T;
+  buttons?:
+    | T
+    | {
+        button?:
+          | T
+          | {
+              label?: T;
+              url?: T;
+              style?: T;
+              icon?: T;
+              newTab?: T;
+            };
+        id?: T;
+      };
+  stats?:
+    | T
+    | {
+        value?: T;
+        label?: T;
+        id?: T;
+      };
+  scrollLink?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        style?: T;
+        icon?: T;
+        newTab?: T;
+      };
+  type?: T;
+  text?: T;
+  images?: T;
+  imagePosition?: T;
+  videoType?: T;
+  youtube?: T;
+  video?: T;
+  fullVideo?: T;
+  videoFallback?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TickerBlock_select".
+ */
+export interface TickerBlockSelect<T extends boolean = true> {
+  items?:
+    | T
+    | {
+        label?: T;
+        id?: T;
+      };
+  duration?: T;
+  theme?: T;
+  anchor?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "IntroContentBlock_select".
+ */
+export interface IntroContentBlockSelect<T extends boolean = true> {
+  layout?: T;
+  heading?: T;
+  eyebrow?: T;
+  stat?:
+    | T
+    | {
+        value?: T;
+        caption?: T;
+      };
+  content?: T;
+  buttons?:
+    | T
+    | {
+        button?:
+          | T
+          | {
+              label?: T;
+              url?: T;
+              style?: T;
+              icon?: T;
+              newTab?: T;
+            };
+        id?: T;
+      };
+  headingLinks?:
+    | T
+    | {
+        button?:
+          | T
+          | {
+              label?: T;
+              url?: T;
+              style?: T;
+              icon?: T;
+              newTab?: T;
+            };
+        id?: T;
+      };
+  image?: T;
+  theme?: T;
+  anchor?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductCardsManualBlock_select".
+ */
+export interface ProductCardsManualBlockSelect<T extends boolean = true> {
+  introEyebrow?: T;
+  introHeading?: T;
+  introText?: T;
+  introButton?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        style?: T;
+        icon?: T;
+        newTab?: T;
+      };
+  cards?:
+    | T
+    | {
+        tag?: T;
+        heading?: T;
+        text?: T;
+        image?: T;
+        link?:
+          | T
+          | {
+              label?: T;
+              url?: T;
+              style?: T;
+              icon?: T;
+              newTab?: T;
+            };
+        id?: T;
+      };
+  theme?: T;
+  anchor?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "IconGridBlock_select".
+ */
+export interface IconGridBlockSelect<T extends boolean = true> {
+  introEyebrow?: T;
+  introHeading?: T;
+  introText?: T;
+  introButton?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        style?: T;
+        icon?: T;
+        newTab?: T;
+      };
+  style?: T;
+  numbered?: T;
+  grid?:
+    | T
+    | {
+        icon?: T;
+        image?: T;
+        heading?: T;
+        text?: T;
+        link?:
+          | T
+          | {
+              label?: T;
+              url?: T;
+              style?: T;
+              icon?: T;
+              newTab?: T;
+            };
+        id?: T;
+      };
+  theme?: T;
+  anchor?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RepeaterContentBlock_select".
+ */
+export interface RepeaterContentBlockSelect<T extends boolean = true> {
+  firstImageSide?: T;
+  rows?:
+    | T
+    | {
+        eyebrow?: T;
+        logo?: T;
+        heading?: T;
+        content?: T;
+        tags?:
+          | T
+          | {
+              label?: T;
+              id?: T;
+            };
+        buttons?:
+          | T
+          | {
+              button?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                    style?: T;
+                    icon?: T;
+                    newTab?: T;
+                  };
+              id?: T;
+            };
+        mediaType?: T;
+        imageFit?: T;
+        images?: T;
+        videoType?: T;
+        youtubeLink?: T;
+        video?: T;
+        videoPoster?: T;
+        id?: T;
+      };
+  theme?: T;
+  anchor?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TimelineBlock_select".
+ */
+export interface TimelineBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  content?: T;
+  items?:
+    | T
+    | {
+        year?: T;
+        title?: T;
+        text?: T;
+        id?: T;
+      };
+  theme?: T;
+  anchor?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LogoGridBlock_select".
+ */
+export interface LogoGridBlockSelect<T extends boolean = true> {
+  introEyebrow?: T;
+  introHeading?: T;
+  introText?: T;
+  introButton?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        style?: T;
+        icon?: T;
+        newTab?: T;
+      };
+  logos?:
+    | T
+    | {
+        name?: T;
+        url?: T;
+        logo?: T;
+        id?: T;
+      };
+  theme?: T;
+  anchor?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "GalleryBlock_select".
+ */
+export interface GalleryBlockSelect<T extends boolean = true> {
+  introEyebrow?: T;
+  introHeading?: T;
+  introText?: T;
+  introButton?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        style?: T;
+        icon?: T;
+        newTab?: T;
+      };
+  gallery?: T;
+  theme?: T;
+  anchor?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TestimonialsBlock_select".
+ */
+export interface TestimonialsBlockSelect<T extends boolean = true> {
+  introEyebrow?: T;
+  introHeading?: T;
+  introText?: T;
+  introButton?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        style?: T;
+        icon?: T;
+        newTab?: T;
+      };
+  style?: T;
+  testimonials?: T;
+  theme?: T;
+  anchor?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "JobsListBlock_select".
+ */
+export interface JobsListBlockSelect<T extends boolean = true> {
+  introEyebrow?: T;
+  introHeading?: T;
+  introText?: T;
+  introButton?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        style?: T;
+        icon?: T;
+        newTab?: T;
+      };
+  emptyText?: T;
+  cta?:
+    | T
+    | {
+        heading?: T;
+        text?: T;
+        button?:
+          | T
+          | {
+              label?: T;
+              url?: T;
+              style?: T;
+              icon?: T;
+              newTab?: T;
+            };
+      };
+  theme?: T;
+  anchor?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PostsLoopBlock_select".
+ */
+export interface PostsLoopBlockSelect<T extends boolean = true> {
+  perPage?: T;
+  showFilters?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LatestNewsBlock_select".
+ */
+export interface LatestNewsBlockSelect<T extends boolean = true> {
+  introEyebrow?: T;
+  introHeading?: T;
+  introText?: T;
+  introButton?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        style?: T;
+        icon?: T;
+        newTab?: T;
+      };
+  limit?: T;
+  theme?: T;
+  anchor?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FormSectionBlock_select".
+ */
+export interface FormSectionBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  showContactDetails?: T;
+  formHeading?: T;
+  form?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NumberedSectionsBlock_select".
+ */
+export interface NumberedSectionsBlockSelect<T extends boolean = true> {
+  contentsHeading?: T;
+  sections?:
+    | T
+    | {
+        heading?: T;
+        content?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -274,6 +1869,303 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "testimonials_select".
+ */
+export interface TestimonialsSelect<T extends boolean = true> {
+  customerName?: T;
+  companyName?: T;
+  quote?: T;
+  image?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts_select".
+ */
+export interface PostsSelect<T extends boolean = true> {
+  title?: T;
+  generateSlug?: T;
+  slug?: T;
+  publishedDate?: T;
+  category?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  heroImage?: T;
+  excerpt?: T;
+  content?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories_select".
+ */
+export interface CategoriesSelect<T extends boolean = true> {
+  title?: T;
+  generateSlug?: T;
+  slug?: T;
+  order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "jobs_select".
+ */
+export interface JobsSelect<T extends boolean = true> {
+  title?: T;
+  generateSlug?: T;
+  slug?: T;
+  status?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  company?: T;
+  location?: T;
+  type?: T;
+  hours?: T;
+  summary?: T;
+  duties?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
+  requirements?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cvs_select".
+ */
+export interface CvsSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users_select".
+ */
+export interface UsersSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  email?: T;
+  resetPasswordToken?: T;
+  resetPasswordExpiration?: T;
+  salt?: T;
+  hash?: T;
+  resetPasswordRequestedAt?: T;
+  loginAttempts?: T;
+  lockUntil?: T;
+  sessions?:
+    | T
+    | {
+        id?: T;
+        createdAt?: T;
+        expiresAt?: T;
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "forms_select".
+ */
+export interface FormsSelect<T extends boolean = true> {
+  title?: T;
+  fields?:
+    | T
+    | {
+        checkbox?:
+          | T
+          | {
+              name?: T;
+              label?: T;
+              width?: T;
+              required?: T;
+              defaultValue?: T;
+              id?: T;
+              blockName?: T;
+            };
+        email?:
+          | T
+          | {
+              name?: T;
+              label?: T;
+              width?: T;
+              required?: T;
+              id?: T;
+              blockName?: T;
+            };
+        message?:
+          | T
+          | {
+              message?: T;
+              id?: T;
+              blockName?: T;
+            };
+        number?:
+          | T
+          | {
+              name?: T;
+              label?: T;
+              width?: T;
+              defaultValue?: T;
+              required?: T;
+              id?: T;
+              blockName?: T;
+            };
+        select?:
+          | T
+          | {
+              name?: T;
+              label?: T;
+              width?: T;
+              defaultValue?: T;
+              placeholder?: T;
+              options?:
+                | T
+                | {
+                    label?: T;
+                    value?: T;
+                    id?: T;
+                  };
+              required?: T;
+              id?: T;
+              blockName?: T;
+            };
+        text?:
+          | T
+          | {
+              name?: T;
+              label?: T;
+              width?: T;
+              defaultValue?: T;
+              required?: T;
+              id?: T;
+              blockName?: T;
+            };
+        textarea?:
+          | T
+          | {
+              name?: T;
+              label?: T;
+              width?: T;
+              defaultValue?: T;
+              required?: T;
+              id?: T;
+              blockName?: T;
+            };
+        upload?:
+          | T
+          | {
+              name?: T;
+              label?: T;
+              uploadCollection?: T;
+              mimeTypes?:
+                | T
+                | {
+                    mimeType?: T;
+                    id?: T;
+                  };
+              width?: T;
+              maxFileSize?: T;
+              required?: T;
+              multiple?: T;
+              id?: T;
+              blockName?: T;
+            };
+        radio?:
+          | T
+          | {
+              name?: T;
+              label?: T;
+              width?: T;
+              defaultValue?: T;
+              options?:
+                | T
+                | {
+                    label?: T;
+                    value?: T;
+                    id?: T;
+                  };
+              required?: T;
+              id?: T;
+              blockName?: T;
+            };
+      };
+  submitButtonLabel?: T;
+  confirmationType?: T;
+  confirmationMessage?: T;
+  redirect?:
+    | T
+    | {
+        type?: T;
+        reference?: T;
+        url?: T;
+      };
+  emails?:
+    | T
+    | {
+        emailTo?: T;
+        cc?: T;
+        bcc?: T;
+        replyTo?: T;
+        emailFrom?: T;
+        subject?: T;
+        message?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "form-submissions_select".
+ */
+export interface FormSubmissionsSelect<T extends boolean = true> {
+  form?: T;
+  submissionData?:
+    | T
+    | {
+        field?: T;
+        value?: T;
+        id?: T;
+      };
+  submissionUploads?:
+    | T
+    | {
+        field?: T;
+        value?: T;
+        id?: T;
+      };
+  job?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -317,6 +2209,312 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "header".
+ */
+export interface Header {
+  id: number;
+  /**
+   * White version, shown over the navy banners.
+   */
+  logo?: (number | null) | Media;
+  navItems?:
+    | {
+        link: {
+          label: string;
+          url: string;
+          style?: ('auto' | 'primary' | 'secondary' | 'text' | 'icon') | null;
+          /**
+           * Optional Font Awesome classes, e.g. "fa-brands fa-linkedin-in".
+           */
+          icon?: string | null;
+          newTab?: boolean | null;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  cta?: {
+    label?: string | null;
+    url?: string | null;
+    style?: ('auto' | 'primary' | 'secondary' | 'text' | 'icon') | null;
+    /**
+     * Optional Font Awesome classes, e.g. "fa-brands fa-linkedin-in".
+     */
+    icon?: string | null;
+    newTab?: boolean | null;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "footer".
+ */
+export interface Footer {
+  id: number;
+  logo?: (number | null) | Media;
+  badge?: (number | null) | Media;
+  menuHeading?: string | null;
+  addressHeading?: string | null;
+  contactHeading?: string | null;
+  menu?:
+    | {
+        link: {
+          label: string;
+          url: string;
+          style?: ('auto' | 'primary' | 'secondary' | 'text' | 'icon') | null;
+          /**
+           * Optional Font Awesome classes, e.g. "fa-brands fa-linkedin-in".
+           */
+          icon?: string | null;
+          newTab?: boolean | null;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  legalLinks?:
+    | {
+        link: {
+          label: string;
+          url: string;
+          style?: ('auto' | 'primary' | 'secondary' | 'text' | 'icon') | null;
+          /**
+           * Optional Font Awesome classes, e.g. "fa-brands fa-linkedin-in".
+           */
+          icon?: string | null;
+          newTab?: boolean | null;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * {year} and {company} are replaced with the current year and company name.
+   */
+  copyright?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "companyDetails".
+ */
+export interface CompanyDetail {
+  id: number;
+  companyName: string;
+  regNumber?: string | null;
+  address?:
+    | {
+        line: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Shown under the address on the contact page.
+   */
+  addressNote?: string | null;
+  phoneNumbers?:
+    | {
+        number: string;
+        id?: string | null;
+      }[]
+    | null;
+  emailAddresses?:
+    | {
+        email: string;
+        id?: string | null;
+      }[]
+    | null;
+  socialLinks?:
+    | {
+        title: string;
+        /**
+         * e.g. "fa-brands fa-linkedin-in"
+         */
+        icon: string;
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "jobSettings".
+ */
+export interface JobSetting {
+  id: number;
+  /**
+   * Used on every job page and /careers/apply. Submissions are linked to the job.
+   */
+  applicationForm: number | Form;
+  why?: {
+    heading?: string | null;
+    text?: string | null;
+    link?: {
+      label?: string | null;
+      url?: string | null;
+      style?: ('auto' | 'primary' | 'secondary' | 'text' | 'icon') | null;
+      /**
+       * Optional Font Awesome classes, e.g. "fa-brands fa-linkedin-in".
+       */
+      icon?: string | null;
+      newTab?: boolean | null;
+    };
+  };
+  general?: {
+    heading?: string | null;
+    text?: string | null;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "header_select".
+ */
+export interface HeaderSelect<T extends boolean = true> {
+  logo?: T;
+  navItems?:
+    | T
+    | {
+        link?:
+          | T
+          | {
+              label?: T;
+              url?: T;
+              style?: T;
+              icon?: T;
+              newTab?: T;
+            };
+        id?: T;
+      };
+  cta?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        style?: T;
+        icon?: T;
+        newTab?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "footer_select".
+ */
+export interface FooterSelect<T extends boolean = true> {
+  logo?: T;
+  badge?: T;
+  menuHeading?: T;
+  addressHeading?: T;
+  contactHeading?: T;
+  menu?:
+    | T
+    | {
+        link?:
+          | T
+          | {
+              label?: T;
+              url?: T;
+              style?: T;
+              icon?: T;
+              newTab?: T;
+            };
+        id?: T;
+      };
+  legalLinks?:
+    | T
+    | {
+        link?:
+          | T
+          | {
+              label?: T;
+              url?: T;
+              style?: T;
+              icon?: T;
+              newTab?: T;
+            };
+        id?: T;
+      };
+  copyright?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "companyDetails_select".
+ */
+export interface CompanyDetailsSelect<T extends boolean = true> {
+  companyName?: T;
+  regNumber?: T;
+  address?:
+    | T
+    | {
+        line?: T;
+        id?: T;
+      };
+  addressNote?: T;
+  phoneNumbers?:
+    | T
+    | {
+        number?: T;
+        id?: T;
+      };
+  emailAddresses?:
+    | T
+    | {
+        email?: T;
+        id?: T;
+      };
+  socialLinks?:
+    | T
+    | {
+        title?: T;
+        icon?: T;
+        url?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "jobSettings_select".
+ */
+export interface JobSettingsSelect<T extends boolean = true> {
+  applicationForm?: T;
+  why?:
+    | T
+    | {
+        heading?: T;
+        text?: T;
+        link?:
+          | T
+          | {
+              label?: T;
+              url?: T;
+              style?: T;
+              icon?: T;
+              newTab?: T;
+            };
+      };
+  general?:
+    | T
+    | {
+        heading?: T;
+        text?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "collections_widget".
  */
 export interface CollectionsWidget {
@@ -324,6 +2522,17 @@ export interface CollectionsWidget {
     [k: string]: unknown;
   };
   width: 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "QuoteBlock".
+ */
+export interface QuoteBlock {
+  quote: string;
+  author?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'quote';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

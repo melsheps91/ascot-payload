@@ -1,0 +1,87 @@
+// Auto Prefix
+@mixin css($property, $value...) {
+  @each $prefix in -webkit-, -moz-, -ms-, -o-, '' {
+    #{$prefix}#{$property}: $value;
+  }
+}
+
+// Media Queries
+@mixin max-width($maxWidth) {
+  @media only screen and (max-width: $maxWidth) {
+    @content;
+  }
+}
+
+@mixin min-width($minWidth) {
+  @media only screen and (min-width: $minWidth) {
+    @content;
+  }
+}
+
+@mixin max-height($maxHeight) {
+  @media only screen and (max-height: $maxHeight) {
+    @content;
+  }
+}
+
+@mixin min-height($minHeight) {
+  @media only screen and (min-height: $minHeight) {
+    @content;
+  }
+}
+
+// Fonts (loaded by next/font in layout.tsx)
+@mixin font-primary() {
+  font-family: var(--font-primary), sans-serif;
+}
+
+@mixin font-secondary() {
+  font-family: var(--font-secondary), sans-serif;
+  text-transform: uppercase;
+}
+
+// Ascot redesign type helpers
+
+// Small uppercase label above headings, e.g. "01 — Who we are".
+@mixin eyebrow() {
+  font-size: 13px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+// Light display heading; wrap words in *asterisks* in the CMS to make them bold.
+@mixin display($size, $weight: 200, $line-height: 1, $tracking: -0.035em) {
+  margin: 0;
+  font-size: $size;
+  font-weight: $weight;
+  line-height: $line-height;
+  letter-spacing: $tracking;
+  text-wrap: balance;
+  strong {
+    font-weight: 500;
+  }
+}
+
+// Lays children out in as many columns of at least $min as fit.
+@mixin auto-grid($min, $gap: 20px) {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, $min), 1fr));
+  gap: $gap;
+}
+
+@mixin rise($delay: 0s) {
+  animation: ascot-rise 1s $delay ease both;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+// Placeholder
+@mixin placeholder() {
+  ::-webkit-input-placeholder {@content}
+  :-moz-placeholder           {@content}
+  ::-moz-placeholder          {@content}
+  :-ms-input-placeholder      {@content}
+}

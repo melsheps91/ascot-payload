@@ -1,0 +1,107 @@
+@use '../vars' as *;
+@use '../mixins' as *;
+
+///////////////////////////////////////////////
+//////  REPEATER CONTENT
+//////////////////////////////////////////////
+
+.repeater-content {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(80px, 10vw, 140px);
+
+  .row {
+    @include auto-grid(440px, clamp(40px, 6vw, 96px));
+    align-items: center;
+    &.media-right > .image,
+    &.media-right > .video {
+      order: 1;
+      @include max-width(1000px) {
+        order: 0;
+      }
+    }
+  }
+
+  .image,
+  .video {
+    position: relative;
+    height: clamp(320px, 36vw, 540px);
+    border-radius: $radius-large;
+    overflow: hidden;
+    background: $col-light-grey;
+    &.contain {
+      background: transparent;
+    }
+    iframe {
+      height: 100%;
+      border: 0;
+    }
+  }
+
+  .image-slider,
+  .image-slider .slider-viewport,
+  .image-slider .slider-track,
+  .image-slider .slider-slide,
+  .image-slider .slide {
+    height: 100%;
+  }
+
+  .image-slider .slide {
+    position: relative;
+  }
+
+  .image-slider .slider-controls {
+    position: absolute;
+    left: 20px;
+    right: 20px;
+    bottom: 20px;
+  }
+
+  .row-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 28px;
+    h2 {
+      @include display(clamp(36px, 4.4vw, 68px), 200, 1.05, -0.03em);
+    }
+    .content {
+      font-size: 17px;
+    }
+  }
+
+  .row-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    width: 100%;
+  }
+
+  .row-logo {
+    position: relative;
+    flex: none;
+    width: 160px;
+    height: 52px;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .buttons {
+    padding-top: 12px;
+    .btn {
+      padding: 16px 26px;
+      font-size: 14px;
+    }
+  }
+}
+
+// Light rows use filled grey tags; navy rows keep the outline.
+.repeater-content-wrap:not(.primary-back) .tags .pill {
+  border-color: $col-light-grey;
+  background: $col-light-grey;
+}

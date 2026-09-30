@@ -1,67 +1,152 @@
-# Payload Blank Template
+# The Ascot Group website
 
-This template comes configured with the bare minimum to get started on anything you need.
+The Ascot Group's website, built on [Payload CMS](https://payloadcms.com) 3 and Next.js 16. It recreates the "Homepage redesign brief" from Claude Design using the structure of [CleanBuild Pro](https://github.com/purplexmarketing/CleanBuildPro), Purplex's WordPress starter theme: its ACF sections become Payload blocks, and its SCSS partials and mixins style the site.
 
-## Quick start
+Everything on the site is editable in a Purplex-branded admin at `/admin`.
 
-This template can be deployed directly from our Cloud hosting and it will setup MongoDB and cloud S3 object storage for media.
+![The homepage header](public/admin/blocks/banner.jpg)
 
-## Quick Start - local setup
+## Contents
 
-To spin up this template locally, follow these steps:
+- [Getting started](#getting-started)
+- [Commands](#commands)
+- [How the site is built](#how-the-site-is-built)
+- [Editing content](#editing-content)
+- [Forms](#forms)
+- [Styling](#styling)
+- [Database notes](#database-notes)
+- [Before launch](#before-launch)
 
-### Clone
+## Getting started
 
-After you click the `Deploy` button above, you'll want to have standalone copy of this repo on your machine. If you've already cloned this repo, skip to [Development](#development).
+You need Node.js 20.9 or later.
 
-### Development
+```bash
+git clone https://github.com/melsheps91/ascot-payload.git
+cd ascot-payload
+cp .env.example .env      # then set PAYLOAD_SECRET to a long random string
+npm install
+npm run seed              # optional: fills the site with the design's content
+npm run dev
+```
 
-1. First [clone the repo](#clone) if you have not done so already
-2. `cd my-project && cp .env.example .env` to copy the example environment variables. You'll need to add the `MONGODB_URL` from your Cloud project to your `.env` if you want to use S3 storage and the MongoDB database that was created for you.
+- Website: http://localhost:3000
+- Admin: http://localhost:3000/admin (the first visit asks you to create an admin user)
 
-3. `pnpm install && pnpm dev` to install dependencies and start the dev server
-4. open `http://localhost:3000` to open the app in your browser
+The database is a single SQLite file (`ascot-payload.db`), created on first run. It, uploaded images (`media/`) and uploaded CVs (`cvs/`) are not in git.
 
-That's it! Changes made in `./src` will be reflected in your app. Follow the on-screen instructions to login and create your first admin user. Then check out [Production](#production) once you're ready to build and serve your app, and [Deployment](#deployment) when you're ready to go live.
+> Run `npm run dev` in a terminal you can type into. If a schema change is ambiguous, Payload asks "create or rename column?" there, and every request waits until it's answered.
 
-#### Docker (Optional)
+## Commands
 
-If you prefer to use Docker for local development instead of a local MongoDB instance, the provided docker-compose.yml file can be used.
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Development server on port 3000. `npm run devsafe` clears the `.next` cache first. |
+| `npm run build` / `npm run start` | Production build and server. |
+| `npm run seed` | Fills every page, article, job, testimonial, form and setting from the design brief. Safe to re-run: seeded records are updated in place, anything else is left alone. |
+| `npm run db:push` | Applies schema changes when the automatic update fails (see [Database notes](#database-notes)). Add `-- --dry` to preview. Stop `npm run dev` first. |
+| `npm run generate:types` | Regenerates `src/payload-types.ts` after changing a collection, field or block. |
+| `npm run generate:importmap` | Registers new admin components. |
+| `npm run acf:import -- <files> [--dry-run]` | Converts CleanBuild Pro ACF JSON into Payload blocks or globals. Also available in the admin under **Tools → ACF importer** in development. |
+| `npm run test:int` / `npm run test:e2e` | Vitest and Playwright tests. |
+| `npx tsc --noEmit` | Type-check. |
 
-To do so, follow these steps:
+## How the site is built
 
-- Modify the `MONGODB_URL` in your `.env` file to `mongodb://127.0.0.1/<dbname>`
-- Modify the `docker-compose.yml` file's `MONGODB_URL` to match the above `<dbname>`
-- Run `docker-compose up` to start the database, optionally pass `-d` to run in the background.
+CleanBuild Pro's structure maps directly onto Payload:
 
-## How it works
+| CleanBuild Pro (WordPress) | This site |
+| --- | --- |
+| Page templates (a fixed list of `include`s) | The **Pages** collection, built from **Sections** (blocks) the editor chooses and orders |
+| `inc/content/*.php`, `inc/header/banner-*.php` | A block config in `src/blocks/` and a React component in `src/app/(frontend)/components/` |
+| ACF field groups | Block and global configs, keeping the ACF field names |
+| ACF options pages | Globals: Header, Footer, Company Details, Job Settings |
+| Custom post types | Collections: Articles (with Categories), Jobs, Testimonials, CVs |
+| `button_field()`, `wpautop`, `[address]` shortcodes | Shared components in `components/shared/` |
 
-The Payload config is tailored specifically to the needs of most websites. It is pre-configured in the following ways:
+### Page sections
 
-### Collections
+| Section | Based on |
+| --- | --- |
+| Page header | ACF Banner and the four banner templates |
+| Text section | Intro Content |
+| Image & text rows | Repeater Content |
+| Icon grid | Icon Grid |
+| Image cards | Product Cards – Manual |
+| Logo grid | Global Sections logo grid |
+| Image gallery | Gallery |
+| Testimonials | Testimonials slider |
+| Latest news, News listing | `latest-news.php`, `posts-loop.php` |
+| Contact form section | Form Shortcode and `form-section.php` |
+| Scrolling ticker, Timeline, Legal sections, Vacancies list | New for the redesign |
 
-See the [Collections](https://payloadcms.com/docs/configuration/collections) docs for details on how to extend this functionality.
+### Routes
 
-- #### Users (Authentication)
+| URL | Renders |
+| --- | --- |
+| `/` | The page with the slug `home` |
+| `/<slug>` | Any other page |
+| `/news/<slug>` | A news article |
+| `/careers/<slug>` | A job, with its application form |
+| `/careers/apply` | The speculative application page |
 
-  Users are auth-enabled collections that have access to the admin panel.
+### Project layout
 
-  For additional help, see the official [Auth Example](https://github.com/payloadcms/payload/tree/3.x/examples/auth) or the [Authentication](https://payloadcms.com/docs/authentication/overview#authentication-overview) docs.
+```
+src/
+  app/(frontend)/      the website: routes, components, scss/
+  app/(payload)/       Payload's admin and API (custom.scss holds the admin styling)
+  blocks/              page section configs
+  collections/         Pages, Articles, Categories, Jobs, Testimonials, CVs, Media, Users
+  globals/             Header, Footer, Company Details, Job Settings
+  components/admin/    admin branding, dashboard and block labels
+  fields/  hooks/  lib/
+scripts/
+  seed/                the content seed and its images
+  acf-to-payload/      the ACF importer
+  push-schema.ts       npm run db:push
+public/admin/          Purplex logos and the block picker thumbnails
+```
 
-- #### Media
+## Editing content
 
-  This is the uploads enabled collection. It features pre-configured sizes, focal point and manual resizing to help you manage your pictures.
+- **Pages** are built from sections. Use **Add Section** at the bottom of a page, and drag sections to reorder them. Each section's **Section settings** set its background (white, grey or navy).
+- **Bold words in headings:** wrap them in `*asterisks*`, e.g. `Build your career *with us.*`
+- **Image cropping:** click the important part of an image in **Images & files** to set its focal point. Page headers also have an **Image Position** setting.
+- **Preview:** pages, articles and jobs have a preview button next to **Save**.
+- **Edit from the website:** when you're logged in to the admin, an **Edit page** button appears in the bottom-right corner of every page.
+- **Menus, footer and contact details** are under **Settings**.
 
-### Docker
+## Forms
 
-Alternatively, you can use [Docker](https://www.docker.com) to spin up this template locally. To do so, follow these steps:
+Forms use Payload's [form-builder plugin](https://payloadcms.com/docs/plugins/form-builder), so they're edited under **Forms → Forms**, and everything sent arrives in **Forms → Submissions**.
 
-1. Follow [steps 1 and 2 from above](#development), the docker-compose file will automatically use the `.env` file in your project root
-1. Next run `docker-compose up`
-1. Follow [steps 4 and 5 from above](#development) to login and create your first admin user
+- **Contact** is used by the Contact form section on `/contact`.
+- **Job application** is used on every job page and `/careers/apply`, chosen in **Careers → Job Settings**. Applications are linked to their job, and CVs (PDF or Word, up to 10 MB) are stored in the private **CVs** collection, which only logged-in users can open.
 
-That's it! The Docker instance will help you get up and running quickly while also standardizing the development environment across your teams.
+One renderer (`src/app/(frontend)/components/form/`) draws any form in the site's style and posts it to Payload's `/api/form-submissions`.
 
-## Questions
+## Styling
 
-If you have any issues or questions, reach out to us on [Discord](https://discord.com/invite/payload) or start a [GitHub discussion](https://github.com/payloadcms/payload/discussions).
+- Sass, in `src/app/(frontend)/scss/`, using CleanBuild Pro's partials: `_vars`, `_mixins`, `_reset`, `_helpers`, `_text-defaults`, `_buttons`, `_forms`. Section styles are one partial per block in `scss/sections/`.
+- Fonts: Montserrat, via `next/font`.
+- Icons: the Font Awesome 7 Pro kit, loaded in `layout.tsx`. Override the kit with `NEXT_PUBLIC_FONT_AWESOME_KIT`.
+- Sliders use [Embla Carousel](https://www.embla-carousel.com); the video lightbox uses the native `<dialog>` element.
+
+## Database notes
+
+- In development, Payload updates the database automatically when collections or blocks change. **Removing or renaming a field or block deletes its data straight away**, so back up `ascot-payload.db` before restructuring.
+- A drizzle-kit bug writes some `CREATE INDEX` statements twice when it rebuilds a table (for example after adding a collection), so the automatic update fails with "index … already exists" and requests hang. Stop the dev server and run `npm run db:push`, which applies the same changes without the duplicates and refuses anything flagged as data loss.
+- `docker-compose.yml` is left over from the Payload template and describes MongoDB. It isn't used.
+
+## Before launch
+
+- [ ] Upload the missing images: brand and client logos, the TEDx and Acquisitions images, the Building Products image and the award badge.
+- [ ] Connect an email service (e.g. SMTP with `@payloadcms/email-nodemailer`, or Resend) so form notification emails send. Until then they're only written to the server log.
+- [ ] Allow the live domain in the Font Awesome kit settings.
+- [ ] Set `NEXT_PUBLIC_SERVER_URL` to the live address (used for share links).
+- [ ] Choose production hosting and a database. SQLite suits a single server; Postgres suits serverless hosting.
+
+---
+
+Built by [Purplex](https://www.purplexmarketing.com) for The Ascot Group.

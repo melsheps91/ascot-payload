@@ -1,0 +1,306 @@
+// Purplex branding and usability tweaks for the Payload admin.
+// Colours use Payload's theme variables so light and dark mode both work.
+
+:root {
+  // Purplex accent. The logo is monochrome; swap this for the brand colour if needed.
+  --plx-accent: var(--theme-elevation-1000);
+  --plx-radius: 12px;
+}
+
+// Logo and mark: show the colourway that suits the current theme.
+.plx-logo,
+.plx-icon {
+  display: inline-flex;
+  img {
+    display: block;
+    width: auto;
+  }
+  .plx-on-dark {
+    display: none;
+  }
+}
+
+html[data-theme='dark'] {
+  .plx-on-light {
+    display: none;
+  }
+  .plx-on-dark {
+    display: block;
+  }
+}
+
+.plx-logo img {
+  height: 64px;
+  max-width: 100%;
+}
+
+.plx-icon img {
+  height: 28px;
+}
+
+// Login screen.
+.login__brand {
+  margin-bottom: calc(var(--base) * 1.5);
+}
+
+.plx-before-login {
+  margin-bottom: calc(var(--base) * 1.5);
+  text-align: center;
+  h1 {
+    margin: 0 0 6px;
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  p {
+    margin: 0;
+    color: var(--theme-elevation-600);
+  }
+}
+
+// Sidebar.
+.plx-view-site {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: calc(var(--base) * 1.5);
+  padding: 8px 14px;
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 999px;
+  color: var(--theme-elevation-800);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  &:hover {
+    border-color: var(--plx-accent);
+    color: var(--plx-accent);
+  }
+}
+
+// Dashboard.
+.plx-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--base) * 1.5);
+  margin-bottom: calc(var(--base) * 2.5);
+
+  h1,
+  h2 {
+    margin: 0;
+  }
+
+  a {
+    text-decoration: none;
+  }
+}
+
+.plx-welcome {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--base);
+  h1 {
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  p {
+    margin: 4px 0 0;
+    color: var(--theme-elevation-600);
+    font-size: 16px;
+  }
+}
+
+.plx-button {
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: var(--plx-accent);
+  color: var(--theme-elevation-0);
+  font-weight: 500;
+  &:hover {
+    opacity: 0.85;
+  }
+}
+
+.plx-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  @media (max-width: 560px) {
+    grid-template-columns: 1fr;
+  }
+  gap: 12px;
+}
+
+.plx-action {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 18px 44px 18px 18px;
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: var(--plx-radius);
+  background: var(--theme-elevation-0);
+  color: var(--theme-text);
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  &:hover {
+    border-color: var(--plx-accent);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+  }
+}
+
+.plx-action-label {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.plx-action-text {
+  color: var(--theme-elevation-600);
+  font-size: 13px;
+}
+
+.plx-action-arrow {
+  position: absolute;
+  top: 50%;
+  right: 18px;
+  transform: translateY(-50%);
+  color: var(--theme-elevation-500);
+}
+
+.plx-panels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+.plx-stats {
+  display: grid;
+  gap: 12px;
+}
+
+.plx-stat {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+  border-radius: var(--plx-radius);
+  background: var(--theme-elevation-50);
+  color: var(--theme-text);
+  &:hover {
+    background: var(--theme-elevation-100);
+  }
+}
+
+.plx-stat-value {
+  min-width: 44px;
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.plx-stat-label {
+  color: var(--theme-elevation-700);
+  font-size: 14px;
+}
+
+.plx-panel {
+  padding: 18px;
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: var(--plx-radius);
+  h2 {
+    font-size: 16px;
+    font-weight: 600;
+  }
+}
+
+.plx-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  a {
+    color: var(--theme-elevation-600);
+    font-size: 13px;
+    &:hover {
+      color: var(--plx-accent);
+    }
+  }
+}
+
+.plx-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  li + li {
+    border-top: 1px solid var(--theme-elevation-100);
+  }
+  a {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 0;
+    color: var(--theme-text);
+    font-size: 14px;
+    &:hover span {
+      text-decoration: underline;
+    }
+  }
+  time {
+    flex: none;
+    color: var(--theme-elevation-500);
+    font-size: 13px;
+  }
+}
+
+.plx-empty {
+  margin: 8px 0 0;
+  color: var(--theme-elevation-500);
+}
+
+.plx-tips {
+  ul {
+    margin: 10px 0 0;
+    padding-left: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: var(--theme-elevation-700);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  code {
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: var(--theme-elevation-100);
+    font-size: 13px;
+  }
+}
+
+// Block picker: bigger, clearer thumbnails.
+.blocks-drawer__block {
+  .thumbnail-card__thumbnail,
+  .thumbnail-card__thumbnail img {
+    object-fit: cover;
+  }
+}
+
+// Block headers in the page editor (BlockLabel.tsx).
+.plx-block-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.plx-block-summary {
+  overflow: hidden;
+  color: var(--theme-elevation-600);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
